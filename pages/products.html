@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Products — Alibaba Store</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    body { padding-top: 105px; }
+
+    .shop-layout {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      gap: 2rem;
+      padding: 2.5rem 0 5rem;
+      align-items: start;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      position: sticky;
+      top: 120px;
+      background: var(--clr-dark2);
+      border: 1px solid var(--clr-border);
+      border-radius: var(--radius-md);
+      padding: 1.5rem;
+    }
+    .sidebar-section { margin-bottom: 2rem; }
+    .sidebar-section:last-child { margin-bottom: 0; }
+    .sidebar-section h4 {
+      font-family: var(--ff-display);
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--clr-light);
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--clr-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .filter-check {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 6px 0;
+      cursor: pointer;
+    }
+    .filter-check input[type="checkbox"] { accent-color: var(--clr-primary); width:15px; height:15px; }
+    .filter-check label {
+      font-size: 0.83rem;
+      color: var(--clr-muted);
+      cursor: pointer;
+      flex: 1;
+      transition: var(--transition);
+    }
+    .filter-check:hover label { color: var(--clr-primary); }
+    .filter-check .count {
+      font-size: 0.72rem;
+      background: var(--clr-dark3);
+      padding: 2px 7px;
+      border-radius: 10px;
+      color: var(--clr-muted);
+    }
+    .price-range { margin-top: 0.5rem; }
+    .price-range input[type=range] {
+      width: 100%;
+      accent-color: var(--clr-primary);
+    }
+    .price-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.78rem;
+      color: var(--clr-muted);
+      margin-top: 4px;
+    }
+    .color-swatches {
+      display: flex; gap: 8px; flex-wrap: wrap; margin-top: 0.5rem;
+    }
+    .swatch {
+      width: 26px; height: 26px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: var(--transition);
+    }
+    .swatch:hover, .swatch.active { border-color: var(--clr-primary); transform: scale(1.1); }
+    .btn-apply-filter {
+      width: 100%;
+      padding: 10px;
+      background: linear-gradient(135deg, var(--clr-primary), var(--clr-primary-dk));
+      color: var(--clr-dark);
+      border: none;
+      border-radius: var(--radius-sm);
+      font-weight: 600;
+      font-size: 0.82rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: var(--transition);
+      margin-top: 1rem;
+    }
+    .btn-apply-filter:hover { box-shadow: 0 4px 16px rgba(200,169,110,0.35); }
+
+    /* Main area */
+    .shop-main {}
+    .shop-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.8rem;
+      background: var(--clr-dark2);
+      border: 1px solid var(--clr-border);
+      border-radius: var(--radius-md);
+      padding: 0.9rem 1.2rem;
+    }
+    .shop-toolbar-left {
+      display: flex; align-items: center; gap: 12px;
+    }
+    .shop-toolbar-left span {
+      font-size: 0.85rem;
+      color: var(--clr-muted);
+    }
+    .shop-toolbar-left strong { color: var(--clr-primary); }
+    .active-filter {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(200,169,110,0.12);
+      border: 1px solid var(--clr-primary);
+      color: var(--clr-primary);
+      font-size: 0.75rem;
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+    .active-filter button {
+      color: var(--clr-primary);
+      font-size: 0.9rem;
+      line-height: 1;
+    }
+    .shop-toolbar-right { display: flex; align-items: center; gap: 10px; }
+    .sort-select {
+      background: var(--clr-dark3);
+      border: 1px solid var(--clr-border);
+      color: var(--clr-light);
+      padding: 7px 12px;
+      border-radius: var(--radius-sm);
+      font-size: 0.82rem;
+      font-family: var(--ff-body);
+      outline: none;
+      cursor: pointer;
+    }
+    .view-btns button {
+      width: 34px; height: 34px;
+      border: 1px solid var(--clr-border);
+      border-radius: var(--radius-sm);
+      display: inline-flex; align-items: center; justify-content: center;
+      color: var(--clr-muted);
+      transition: var(--transition);
+      background: transparent;
+    }
+    .view-btns button.active, .view-btns button:hover {
+      border-color: var(--clr-primary);
+      color: var(--clr-primary);
+    }
+    .view-btns button svg { width:15px; height:15px; }
+
+    .products-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.3rem; }
+    .products-grid.list-view { grid-template-columns: 1fr; }
+    .products-grid.list-view .product-card { display: grid; grid-template-columns: 200px 1fr; }
+    .products-grid.list-view .product-card-img { aspect-ratio: auto; height: 160px; }
+
+    /* Pagination */
+    .pagination {
+      display: flex; align-items: center; justify-content: center;
+      gap: 6px; margin-top: 3rem;
+    }
+    .pagination button {
+      width: 38px; height: 38px;
+      border: 1px solid var(--clr-border);
+      border-radius: var(--radius-sm);
+      background: var(--clr-dark2);
+      color: var(--clr-muted);
+      font-size: 0.85rem;
+      font-family: var(--ff-body);
+      transition: var(--transition);
+      cursor: pointer;
+    }
+    .pagination button.active, .pagination button:hover {
+      background: var(--clr-primary);
+      color: var(--clr-dark);
+      border-color: var(--clr-primary);
+      font-weight: 700;
+    }
+    .pagination .prev-next {
+      padding: 0 14px;
+      width: auto;
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+    }
+
+    /* Page header */
+    .shop-page-header {
+      background: linear-gradient(180deg, rgba(200,169,110,0.07) 0%, transparent 100%);
+      border-bottom: 1px solid var(--clr-border);
+      padding: 2.5rem 0 1.5rem;
+    }
+  </style>
+</head>
+<body>
+
+<header class="site-header" id="site-header"></header>
+
+<div class="shop-page-header">
+  <div class="container">
+    <div class="breadcrumb">
+      <a href="../index.html">Home</a>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      <span>Products</span>
+    </div>
+    <h1 style="font-size:2rem;margin-bottom:.4rem">All Products</h1>
+    <p style="color:var(--clr-muted);font-size:.88rem">Discover our complete collection</p>
+  </div>
+</div>
+
+<div class="container">
+  <div class="shop-layout">
+    <!-- Sidebar Filters -->
+    <aside class="sidebar">
+      <div class="sidebar-section">
+        <h4>Categories</h4>
+        <div class="filter-check"><input type="checkbox" id="cat-all" checked><label for="cat-all">All Products</label><span class="count">48</span></div>
+        <div class="filter-check"><input type="checkbox" id="cat-fashion"><label for="cat-fashion">Fashion & Apparel</label><span class="count">18</span></div>
+        <div class="filter-check"><input type="checkbox" id="cat-tech"><label for="cat-tech">Technology</label><span class="count">14</span></div>
+        <div class="filter-check"><input type="checkbox" id="cat-interior"><label for="cat-interior">Interior & Home</label><span class="count">10</span></div>
+        <div class="filter-check"><input type="checkbox" id="cat-accessories"><label for="cat-accessories">Accessories</label><span class="count">6</span></div>
+      </div>
+      <div class="sidebar-section">
+        <h4>Price Range</h4>
+        <div class="price-range">
+          <input type="range" min="0" max="1000" value="500" id="price-slider" oninput="document.getElementById('price-val').textContent='$0 — $'+this.value">
+          <div class="price-labels"><span>$0</span><span id="price-val">$0 — $500</span></div>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <h4>Color</h4>
+        <div class="color-swatches">
+          <div class="swatch active" style="background:#C8A96E" title="Gold"></div>
+          <div class="swatch" style="background:#1a1a2e" title="Navy"></div>
+          <div class="swatch" style="background:#e8e8e8" title="White"></div>
+          <div class="swatch" style="background:#2d2d2d" title="Charcoal"></div>
+          <div class="swatch" style="background:#8B4513" title="Brown"></div>
+          <div class="swatch" style="background:#4A7C59" title="Forest"></div>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <h4>Rating</h4>
+        <div class="filter-check"><input type="checkbox" id="r5"><label for="r5">★★★★★ (5 stars)</label></div>
+        <div class="filter-check"><input type="checkbox" id="r4"><label for="r4">★★★★☆ (4+ stars)</label></div>
+        <div class="filter-check"><input type="checkbox" id="r3"><label for="r3">★★★☆☆ (3+ stars)</label></div>
+      </div>
+      <button class="btn-apply-filter">Apply Filters</button>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="shop-main">
+      <div class="shop-toolbar">
+        <div class="shop-toolbar-left">
+          <span>Showing <strong id="product-count">12</strong> products</span>
+          <span class="active-filter">Fashion <button onclick="this.parentElement.remove()">×</button></span>
+        </div>
+        <div class="shop-toolbar-right">
+          <select class="sort-select" id="sort-select" onchange="sortProducts(this.value)">
+            <option value="featured">Sort: Featured</option>
+            <option value="price-low">Price: Low to High</option>
+            <option value="price-high">Price: High to Low</option>
+            <option value="newest">Newest First</option>
+            <option value="rating">Top Rated</option>
+          </select>
+          <div class="view-btns">
+            <button class="active" id="btn-grid" onclick="setView('grid')" title="Grid view">
+              <svg viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+            </button>
+            <button id="btn-list" onclick="setView('list')" title="List view">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="products-grid" id="products-grid"></div>
+
+      <div class="pagination">
+        <button class="prev-next">← Prev</button>
+        <button class="active">1</button>
+        <button onclick="this.classList.add('active')">2</button>
+        <button>3</button>
+        <button>4</button>
+        <span style="color:var(--clr-muted);padding:0 4px">…</span>
+        <button>12</button>
+        <button class="prev-next">Next →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer class="site-footer" id="site-footer"></footer>
+
+<script src="../js/components.js"></script>
+<script>
+renderHeader('products');
+renderFooter();
+
+const ALL_PRODUCTS = [
+  { id:1,  name:'Silk Blend Dress',        cat:'Fashion',   price:89,  old:129, img:ASSETS.cloth1, stars:5, badge:'New'  },
+  { id:2,  name:'Smart Display Panel',     cat:'Tech',      price:249, old:349, img:ASSETS.tech5,  stars:4, badge:'Hot'  },
+  { id:3,  name:'Luxury Interior Set',     cat:'Interior',  price:399, old:599, img:ASSETS.int6,   stars:5, badge:'Sale' },
+  { id:4,  name:'Premium Tech Device',     cat:'Tech',      price:189, old:0,   img:ASSETS.tech2,  stars:4, badge:''     },
+  { id:5,  name:'Designer Collection',     cat:'Fashion',   price:119, old:159, img:ASSETS.cloth3, stars:5, badge:'New'  },
+  { id:6,  name:'Modern Wall Art',         cat:'Interior',  price:75,  old:0,   img:ASSETS.int2,   stars:4, badge:''     },
+  { id:7,  name:'Casual Summer Top',       cat:'Fashion',   price:45,  old:65,  img:ASSETS.cloth5, stars:4, badge:'Sale' },
+  { id:8,  name:'Smart Tech Gadget',       cat:'Tech',      price:299, old:399, img:ASSETS.tech1,  stars:5, badge:'Hot'  },
+  { id:9,  name:'Elegant Evening Gown',    cat:'Fashion',   price:159, old:219, img:ASSETS.cloth2, stars:5, badge:'New'  },
+  { id:10, name:'Home Decor Bundle',       cat:'Interior',  price:229, old:299, img:ASSETS.int7a,  stars:4, badge:''     },
+  { id:11, name:'Tech Accessories Kit',    cat:'Tech',      price:129, old:0,   img:ASSETS.tech3,  stars:4, badge:''     },
+  { id:12, name:'Premium Fabric Set',      cat:'Fashion',   price:79,  old:109, img:ASSETS.cloth6, stars:5, badge:'Sale' },
+];
+
+let currentProducts = [...ALL_PRODUCTS];
+
+function productCardHTML(p) {
+  return `
+  <div class="product-card" onclick="window.location='product-detail.html?id=${p.id}'">
+    <div class="product-card-img">
+      <img src="${p.img}" alt="${p.name}" loading="lazy">
+      ${p.badge ? `<span class="product-card-badge">${p.badge}</span>` : ''}
+      <div class="product-card-actions">
+        <button onclick="event.stopPropagation();addToCart({id:${p.id},name:'${p.name}',price:${p.price}})" title="Add to cart">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+        </button>
+        <button title="Wishlist">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="product-card-body">
+      <div class="category">${p.cat}</div>
+      <h3>${p.name}</h3>
+      <div class="stars">${renderStars(p.stars)}</div>
+      <div class="product-card-footer">
+        <div><span class="price">$${p.price}</span>${p.old?`<span class="price-old">$${p.old}</span>`:''}</div>
+        <button class="btn-buy" onclick="event.stopPropagation();addToCart({id:${p.id},name:'${p.name}',price:${p.price}})">Buy Now</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderProducts() {
+  document.getElementById('products-grid').innerHTML = currentProducts.map(productCardHTML).join('');
+  document.getElementById('product-count').textContent = currentProducts.length;
+}
+
+function sortProducts(val) {
+  if (val === 'price-low')  currentProducts.sort((a,b) => a.price - b.price);
+  if (val === 'price-high') currentProducts.sort((a,b) => b.price - a.price);
+  if (val === 'newest')     currentProducts.sort((a,b) => b.id - a.id);
+  if (val === 'rating')     currentProducts.sort((a,b) => b.stars - a.stars);
+  if (val === 'featured')   currentProducts = [...ALL_PRODUCTS];
+  renderProducts();
+}
+
+function setView(v) {
+  const grid = document.getElementById('products-grid');
+  document.getElementById('btn-grid').classList.toggle('active', v==='grid');
+  document.getElementById('btn-list').classList.toggle('active', v==='list');
+  grid.classList.toggle('list-view', v==='list');
+}
+
+// Search params
+const params = new URLSearchParams(window.location.search);
+if (params.get('search')) {
+  const q = params.get('search').toLowerCase();
+  currentProducts = ALL_PRODUCTS.filter(p => p.name.toLowerCase().includes(q) || p.cat.toLowerCase().includes(q));
+}
+
+renderProducts();
+updateCartCount();
+</script>
+</body>
+</html>

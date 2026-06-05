@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product Detail — Alibaba Store</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    body { padding-top: 105px; }
+
+    .detail-section {
+      padding: 2.5rem 0 5rem;
+    }
+
+    /* Product layout */
+    .product-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      align-items: start;
+    }
+
+    /* Gallery */
+    .gallery { position: sticky; top: 120px; }
+    .gallery-main {
+      aspect-ratio: 1;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      background: var(--clr-dark3);
+      border: 1px solid var(--clr-border);
+      margin-bottom: 1rem;
+      position: relative;
+    }
+    .gallery-main img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      transition: transform 0.4s ease;
+    }
+    .gallery-main:hover img { transform: scale(1.04); }
+    .gallery-badge {
+      position: absolute;
+      top: 1rem; left: 1rem;
+      background: var(--clr-primary);
+      color: var(--clr-dark);
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 5px 12px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .gallery-thumbs {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+    .gallery-thumb {
+      aspect-ratio: 1;
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: var(--transition);
+    }
+    .gallery-thumb img { width:100%; height:100%; object-fit:cover; }
+    .gallery-thumb.active { border-color: var(--clr-primary); }
+    .gallery-thumb:hover { border-color: rgba(200,169,110,0.5); }
+
+    /* Product info */
+    .product-info {}
+    .product-info .breadcrumb { margin-bottom: 1.2rem; }
+    .product-cat {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--clr-primary);
+      margin-bottom: 0.5rem;
+    }
+    .product-info h1 {
+      font-size: clamp(1.6rem,3vw,2.2rem);
+      margin-bottom: 1rem;
+    }
+    .product-meta {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 1.4rem;
+    }
+    .product-meta .stars { display:flex; gap:2px; }
+    .product-meta .stars svg { width:15px; height:15px; fill: var(--clr-primary); }
+    .product-meta .review-count {
+      font-size: 0.82rem;
+      color: var(--clr-muted);
+    }
+    .product-meta .in-stock {
+      display: flex; align-items: center; gap: 5px;
+      font-size: 0.78rem;
+      color: #4CAF50;
+    }
+    .product-meta .in-stock::before {
+      content: '';
+      width: 7px; height: 7px;
+      background: #4CAF50;
+      border-radius: 50%;
+    }
+    .price-block {
+      display: flex; align-items: baseline; gap: 12px;
+      margin-bottom: 1.5rem;
+    }
+    .price-block .main-price {
+      font-family: var(--ff-display);
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: var(--clr-primary);
+    }
+    .price-block .old-price {
+      font-size: 1.1rem;
+      color: var(--clr-muted);
+      text-decoration: line-through;
+    }
+    .price-block .discount-tag {
+      background: rgba(200,169,110,0.15);
+      border: 1px solid var(--clr-primary);
+      color: var(--clr-primary);
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+    .product-desc {
+      color: rgba(245,240,232,0.7);
+      font-size: 0.9rem;
+      line-height: 1.85;
+      margin-bottom: 1.8rem;
+      padding-bottom: 1.8rem;
+      border-bottom: 1px solid var(--clr-border);
+    }
+
+    /* Size selector */
+    .option-label {
+      font-size: 0.78rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--clr-muted);
+      margin-bottom: 0.7rem;
+    }
+    .size-grid {
+      display: flex; gap: 8px; flex-wrap: wrap;
+      margin-bottom: 1.5rem;
+    }
+    .size-btn {
+      min-width: 44px;
+      padding: 8px 14px;
+      border: 1.5px solid var(--clr-border);
+      border-radius: var(--radius-sm);
+      background: transparent;
+      color: var(--clr-light);
+      font-size: 0.82rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .size-btn:hover { border-color: var(--clr-primary); color: var(--clr-primary); }
+    .size-btn.active {
+      background: var(--clr-primary);
+      border-color: var(--clr-primary);
+      color: var(--clr-dark);
+      font-weight: 700;
+    }
+    .size-btn.disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+      text-decoration: line-through;
+    }
+
+    /* Qty and Add to Cart */
+    .qty-row {
+      display: flex; align-items: center; gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .qty-control {
+      display: flex; align-items: center;
+      background: var(--clr-dark3);
+      border: 1px solid var(--clr-border);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+    }
+    .qty-control button {
+      width: 38px; height: 42px;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--clr-light);
+      font-size: 1.1rem;
+      transition: var(--transition);
+    }
+    .qty-control button:hover { background: var(--clr-dark2); color: var(--clr-primary); }
+    .qty-control span {
+      width: 44px;
+      text-align: center;
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+    .action-btns {
+      display: flex; gap: 10px;
+      margin-bottom: 1.8rem;
+    }
+    .action-btns .btn-primary { flex: 1; justify-content: center; }
+    .btn-wishlist {
+      width: 48px; height: 48px;
+      border: 1.5px solid var(--clr-border);
+      border-radius: var(--radius-sm);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--clr-muted);
+      transition: var(--transition);
+    }
+    .btn-wishlist:hover { border-color: #e91e63; color: #e91e63; }
+    .btn-wishlist svg { width:20px; height:20px; }
+
+    /* Delivery info */
+    .delivery-info {
+      background: var(--clr-dark3);
+      border: 1px solid var(--clr-border);
+      border-radius: var(--radius-md);
+      padding: 1.2rem;
+    }
+    .delivery-row {
+      display: flex; align-items: center; gap: 12px;
+      padding: 8px 0;
+      font-size: 0.85rem;
+      color: rgba(245,240,232,0.75);
+    }
+    .delivery-row:not(:last-child) { border-bottom: 1px solid var(--clr-border); }
+    .delivery-row svg { width:18px; height:18px; color: var(--clr-primary); flex-shrink:0; }
+    .delivery-row strong { color: var(--clr-light); }
+
+    /* Tabs */
+    .tabs { margin-top: 5rem; }
+    .tab-nav {
+      display: flex;
+      border-bottom: 1px solid var(--clr-border);
+      margin-bottom: 2.5rem;
+    }
+    .tab-btn {
+      padding: 12px 24px;
+      font-size: 0.88rem;
+      font-weight: 500;
+      color: var(--clr-muted);
+      border: none;
+      background: none;
+      cursor: pointer;
+      position: relative;
+      transition: var(--transition);
+    }
+    .tab-btn::after {
+      content: '';
+      position: absolute;
+      bottom: -1px; left: 0; right: 0;
+      height: 2px;
+      background: var(--clr-primary);
+      transform: scaleX(0);
+      transition: var(--transition);
+    }
+    .tab-btn.active, .tab-btn:hover { color: var(--clr-primary); }
+    .tab-btn.active::after { transform: scaleX(1); }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* Reviews */
+    .reviews-summary {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 3rem;
+      align-items: center;
+      margin-bottom: 2.5rem;
+      padding-bottom: 2.5rem;
+      border-bottom: 1px solid var(--clr-border);
+    }
+    .overall-score { text-align: center; }
+    .score-num {
+      font-family: var(--ff-display);
+      font-size: 4rem;
+      font-weight: 900;
+      color: var(--clr-primary);
+      line-height: 1;
+    }
+    .score-stars { display:flex; gap:3px; justify-content:center; margin: 6px 0 4px; }
+    .score-stars svg { width:18px; height:18px; fill: var(--clr-primary); }
+    .score-total { font-size: 0.8rem; color: var(--clr-muted); }
+    .rating-bars {}
+    .bar-row {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 6px;
+    }
+    .bar-label { font-size: 0.78rem; color: var(--clr-muted); min-width: 40px; }
+    .bar-track {
+      flex: 1;
+      height: 6px;
+      background: var(--clr-dark3);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--clr-primary), var(--clr-primary-dk));
+      border-radius: 3px;
+    }
+    .bar-pct { font-size: 0.75rem; color: var(--clr-muted); min-width: 36px; text-align: right; }
+
+    .review-card {
+      border-bottom: 1px solid var(--clr-border);
+      padding: 1.5rem 0;
+    }
+    .review-header {
+      display: flex; align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 0.8rem;
+    }
+    .reviewer-info { display: flex; align-items: center; gap: 12px; }
+    .rev-avatar {
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--clr-primary), var(--clr-primary-dk));
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; color: var(--clr-dark);
+    }
+    .rev-name { font-weight: 600; font-size: 0.9rem; }
+    .rev-date { font-size: 0.75rem; color: var(--clr-muted); }
+    .rev-stars { display:flex; gap:2px; margin: 3px 0; }
+    .rev-stars svg { width:12px; height:12px; fill: var(--clr-primary); }
+    .review-text {
+      font-size: 0.88rem;
+      color: rgba(245,240,232,0.75);
+      line-height: 1.75;
+    }
+    .review-helpful {
+      margin-top: 0.8rem;
+      font-size: 0.78rem;
+      color: var(--clr-muted);
+    }
+    .review-helpful button {
+      color: var(--clr-primary);
+      font-size: 0.78rem;
+      margin-left: 8px;
+    }
+
+    /* Related */
+    .related { padding: 4rem 0; border-top: 1px solid var(--clr-border); margin-top: 4rem; }
+    .related .products-grid { grid-template-columns: repeat(4, 1fr); }
+  </style>
+</head>
+<body>
+
+<header class="site-header" id="site-header"></header>
+
+<div style="background:linear-gradient(180deg,rgba(200,169,110,.06) 0%,transparent 100%);border-bottom:1px solid var(--clr-border);padding:1.8rem 0 1rem">
+  <div class="container">
+    <div class="breadcrumb">
+      <a href="../index.html">Home</a>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      <a href="products.html">Products</a>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      <span id="bc-name">Product</span>
+    </div>
+  </div>
+</div>
+
+<section class="detail-section">
+  <div class="container">
+    <div class="product-layout">
+      <!-- Gallery -->
+      <div class="gallery">
+        <div class="gallery-main">
+          <img id="main-img" src="" alt="Product">
+          <span class="gallery-badge" id="product-badge">New</span>
+        </div>
+        <div class="gallery-thumbs" id="gallery-thumbs"></div>
+      </div>
+
+      <!-- Info -->
+      <div class="product-info">
+        <div class="product-cat" id="p-cat">Fashion</div>
+        <h1 id="p-name">Product Name</h1>
+        <div class="product-meta">
+          <div class="stars" id="p-stars"></div>
+          <span class="review-count">(124 reviews)</span>
+          <span class="in-stock">In Stock</span>
+        </div>
+        <div class="price-block">
+          <span class="main-price" id="p-price">$89</span>
+          <span class="old-price" id="p-old"></span>
+          <span class="discount-tag" id="p-discount" style="display:none">Save 30%</span>
+        </div>
+        <p class="product-desc">
+          Experience unmatched quality and style with this premium product. Crafted with the finest materials sourced globally, every detail reflects our commitment to excellence. Perfect for every occasion — whether casual everyday wear or a special event.
+        </p>
+
+        <!-- Size selector -->
+        <div class="option-label">Select Size</div>
+        <div class="size-grid" id="size-grid">
+          <button class="size-btn" onclick="selectSize(this)">XS</button>
+          <button class="size-btn active" onclick="selectSize(this)">S</button>
+          <button class="size-btn" onclick="selectSize(this)">M</button>
+          <button class="size-btn" onclick="selectSize(this)">L</button>
+          <button class="size-btn" onclick="selectSize(this)">XL</button>
+          <button class="size-btn disabled" onclick="selectSize(this)" disabled>XXL</button>
+        </div>
+
+        <!-- Color -->
+        <div class="option-label" style="margin-top:.5rem">Select Color</div>
+        <div class="color-swatches" style="margin-bottom:1.5rem">
+          <div class="swatch active" style="background:#C8A96E" onclick="selectSwatch(this)"></div>
+          <div class="swatch" style="background:#2d2d2d" onclick="selectSwatch(this)"></div>
+          <div class="swatch" style="background:#e8e8e8" onclick="selectSwatch(this)"></div>
+          <div class="swatch" style="background:#8B4513" onclick="selectSwatch(this)"></div>
+        </div>
+
+        <!-- Qty + Add to Cart -->
+        <div class="qty-row">
+          <div class="qty-control">
+            <button onclick="changeQty(-1)">−</button>
+            <span id="qty">1</span>
+            <button onclick="changeQty(1)">+</button>
+          </div>
+          <span style="font-size:.8rem;color:var(--clr-muted)">Only 8 left in stock</span>
+        </div>
+        <div class="action-btns">
+          <button class="btn btn-primary" id="btn-add-cart">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+            Add to Cart
+          </button>
+          <button class="btn-wishlist">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          </button>
+        </div>
+
+        <!-- Delivery info -->
+        <div class="delivery-info">
+          <div class="delivery-row">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><path d="M16 8h4l3 5v3h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+            <span><strong>Free delivery</strong> on orders over $99</span>
+          </div>
+          <div class="delivery-row">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            <span>Ships to <strong>180+ countries</strong> worldwide</span>
+          </div>
+          <div class="delivery-row">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            <span><strong>30-day returns</strong> — hassle free</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabs: Description / Details / Reviews -->
+    <div class="tabs">
+      <div class="tab-nav">
+        <button class="tab-btn active" onclick="openTab(this,'tab-desc')">Description</button>
+        <button class="tab-btn" onclick="openTab(this,'tab-details')">Product Details</button>
+        <button class="tab-btn" onclick="openTab(this,'tab-reviews')">Reviews (124)</button>
+      </div>
+
+      <div class="tab-content active" id="tab-desc">
+        <p style="color:rgba(245,240,232,.75);line-height:1.9;max-width:800px;font-size:.92rem">
+          This extraordinary product represents the pinnacle of craftsmanship and design. Each piece is carefully manufactured using premium materials sourced from around the world. Our skilled artisans pay meticulous attention to every detail — from the precision stitching to the quality of every component used.
+        </p>
+        <ul style="margin-top:1.5rem;color:rgba(245,240,232,.7);font-size:.88rem;line-height:2;padding-left:1.5rem;list-style:disc">
+          <li>Premium quality materials — durable and long-lasting</li>
+          <li>Expertly crafted with attention to detail</li>
+          <li>Available in multiple sizes and color options</li>
+          <li>Suitable for casual and formal occasions</li>
+          <li>Care instructions: machine washable (30°C), do not tumble dry</li>
+          <li>Ethically sourced — certified sustainable production</li>
+        </ul>
+      </div>
+
+      <div class="tab-content" id="tab-details">
+        <table style="width:100%;max-width:600px;border-collapse:collapse;font-size:.88rem">
+          <tr style="border-bottom:1px solid var(--clr-border)">
+            <td style="padding:12px 0;color:var(--clr-muted);width:180px">SKU</td>
+            <td style="color:var(--clr-light)">ALB-20260001</td>
+          </tr>
+          <tr style="border-bottom:1px solid var(--clr-border)">
+            <td style="padding:12px 0;color:var(--clr-muted)">Material</td>
+            <td style="color:var(--clr-light)">95% Premium Silk, 5% Elastane</td>
+          </tr>
+          <tr style="border-bottom:1px solid var(--clr-border)">
+            <td style="padding:12px 0;color:var(--clr-muted)">Origin</td>
+            <td style="color:var(--clr-light)">Shanghai, China</td>
+          </tr>
+          <tr style="border-bottom:1px solid var(--clr-border)">
+            <td style="padding:12px 0;color:var(--clr-muted)">Weight</td>
+            <td style="color:var(--clr-light)">0.35 kg</td>
+          </tr>
+          <tr style="border-bottom:1px solid var(--clr-border)">
+            <td style="padding:12px 0;color:var(--clr-muted)">Dimensions</td>
+            <td style="color:var(--clr-light)">30 × 20 × 5 cm (packed)</td>
+          </tr>
+          <tr>
+            <td style="padding:12px 0;color:var(--clr-muted)">Warranty</td>
+            <td style="color:var(--clr-light)">12 months manufacturer warranty</td>
+          </tr>
+        </table>
+      </div>
+
+      <div class="tab-content" id="tab-reviews">
+        <div class="reviews-summary">
+          <div class="overall-score">
+            <div class="score-num">4.8</div>
+            <div class="score-stars">
+              <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="none"/></svg>
+              <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="none"/></svg>
+              <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="none"/></svg>
+              <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="none"/></svg>
+              <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="none"/></svg>
+            </div>
+            <div class="score-total">124 reviews</div>
+          </div>
+          <div class="rating-bars">
+            <div class="bar-row"><span class="bar-label">5 ★</span><div class="bar-track"><div class="bar-fill" style="width:78%"></div></div><span class="bar-pct">78%</span></div>
+            <div class="bar-row"><span class="bar-label">4 ★</span><div class="bar-track"><div class="bar-fill" style="width:14%"></div></div><span class="bar-pct">14%</span></div>
+            <div class="bar-row"><span class="bar-label">3 ★</span><div class="bar-track"><div class="bar-fill" style="width:5%"></div></div><span class="bar-pct">5%</span></div>
+            <div class="bar-row"><span class="bar-label">2 ★</span><div class="bar-track"><div class="bar-fill" style="width:2%"></div></div><span class="bar-pct">2%</span></div>
+            <div class="bar-row"><span class="bar-label">1 ★</span><div class="bar-track"><div class="bar-fill" style="width:1%"></div></div><span class="bar-pct">1%</span></div>
+          </div>
+        </div>
+
+        <div id="review-list"></div>
+      </div>
+    </div>
+
+    <!-- Related Products -->
+    <div class="related">
+      <div class="section-header">
+        <div class="section-header-left">
+          <span class="section-tag">You May Also Like</span>
+          <h2>Related Products</h2>
+        </div>
+        <a href="products.html" class="btn btn-outline">View All</a>
+      </div>
+      <div class="products-grid" id="related-grid"></div>
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer" id="site-footer"></footer>
+
+<script src="../js/components.js"></script>
+<script>
+renderHeader('');
+renderFooter();
+
+const PRODUCTS_DB = [
+  { id:1, name:'Silk Blend Dress',     cat:'Fashion',  price:89,  old:129, img:ASSETS.cloth1, stars:5, badge:'New',  imgs:[ASSETS.cloth1,ASSETS.cloth2,ASSETS.cloth3,ASSETS.cloth4] },
+  { id:2, name:'Smart Display Panel',  cat:'Tech',     price:249, old:349, img:ASSETS.tech5,  stars:4, badge:'Hot',  imgs:[ASSETS.tech5,ASSETS.tech1,ASSETS.tech2,ASSETS.tech3]  },
+  { id:3, name:'Luxury Interior Set',  cat:'Interior', price:399, old:599, img:ASSETS.int6,   stars:5, badge:'Sale', imgs:[ASSETS.int6,ASSETS.int7a,ASSETS.int8a,ASSETS.int9]    },
+  { id:4, name:'Premium Tech Device',  cat:'Tech',     price:189, old:0,   img:ASSETS.tech2,  stars:4, badge:'',     imgs:[ASSETS.tech2,ASSETS.tech4,ASSETS.tech6,ASSETS.tech7]  },
+  { id:5, name:'Designer Collection',  cat:'Fashion',  price:119, old:159, img:ASSETS.cloth3, stars:5, badge:'New',  imgs:[ASSETS.cloth3,ASSETS.cloth5,ASSETS.cloth6,ASSETS.cloth1] },
+  { id:6, name:'Modern Wall Art',      cat:'Interior', price:75,  old:0,   img:ASSETS.int2,   stars:4, badge:'',     imgs:[ASSETS.int2,ASSETS.int1,ASSETS.int6,ASSETS.int7b]      },
+  { id:7, name:'Casual Summer Top',    cat:'Fashion',  price:45,  old:65,  img:ASSETS.cloth5, stars:4, badge:'Sale', imgs:[ASSETS.cloth5,ASSETS.cloth6,ASSETS.cloth2,ASSETS.cloth4] },
+  { id:8, name:'Smart Tech Gadget',    cat:'Tech',     price:299, old:399, img:ASSETS.tech1,  stars:5, badge:'Hot',  imgs:[ASSETS.tech1,ASSETS.tech5,ASSETS.tech3,ASSETS.tech7]   },
+];
+
+// Get product from URL param
+const params = new URLSearchParams(window.location.search);
+const pid = parseInt(params.get('id')) || 1;
+const product = PRODUCTS_DB.find(p => p.id === pid) || PRODUCTS_DB[0];
+
+// Populate page
+document.getElementById('bc-name').textContent = product.name;
+document.getElementById('p-name').textContent = product.name;
+document.getElementById('p-cat').textContent = product.cat;
+document.getElementById('p-price').textContent = '$' + product.price;
+document.getElementById('p-stars').innerHTML = renderStars(product.stars);
+document.getElementById('product-badge').textContent = product.badge || 'Featured';
+if (product.badge === '') document.getElementById('product-badge').style.display = 'none';
+
+if (product.old) {
+  document.getElementById('p-old').textContent = '$' + product.old;
+  const pct = Math.round((1 - product.price/product.old)*100);
+  document.getElementById('p-discount').textContent = `Save ${pct}%`;
+  document.getElementById('p-discount').style.display = '';
+}
+
+// Gallery
+const mainImg = document.getElementById('main-img');
+mainImg.src = product.imgs[0];
+document.getElementById('gallery-thumbs').innerHTML = product.imgs.map((src,i) => `
+  <div class="gallery-thumb${i===0?' active':''}" onclick="setMainImg(this,'${src}')">
+    <img src="${src}" alt="View ${i+1}" loading="lazy">
+  </div>
+`).join('');
+
+function setMainImg(thumb, src) {
+  mainImg.src = src;
+  document.querySelectorAll('.gallery-thumb').forEach(t => t.classList.remove('active'));
+  thumb.classList.add('active');
+}
+
+// Size selector
+function selectSize(btn) {
+  if (btn.classList.contains('disabled')) return;
+  document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+// Color swatch
+function selectSwatch(el) {
+  document.querySelectorAll('.color-swatches .swatch').forEach(s => s.classList.remove('active'));
+  el.classList.add('active');
+}
+
+// Qty
+let qty = 1;
+function changeQty(d) {
+  qty = Math.max(1, Math.min(8, qty + d));
+  document.getElementById('qty').textContent = qty;
+}
+
+// Add to cart
+document.getElementById('btn-add-cart').onclick = () => {
+  for(let i=0; i<qty; i++) addToCart({id:product.id, name:product.name, price:product.price});
+  updateCartCount();
+};
+
+// Tabs
+function openTab(btn, id) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(id).classList.add('active');
+}
+
+// Reviews
+const reviews = [
+  { name:'Sarah A.', loc:'New York, USA', date:'May 28, 2026', stars:5, text:'Absolutely incredible quality! The fabric feels luxurious and the fit is exactly as described. Fast shipping and beautiful packaging. Will definitely order again!', helpful:34 },
+  { name:'James L.', loc:'London, UK', date:'May 15, 2026', stars:5, text:'Perfect product. Exceeded my expectations in every way. The attention to detail is remarkable and it looks even better in person than in the photos.', helpful:22 },
+  { name:'Fatima K.', loc:'Dubai, UAE', date:'Apr 30, 2026', stars:4, text:'Very happy with this purchase. Great quality overall. The only reason for 4 stars is that delivery took a couple extra days, but the product itself is excellent.', helpful:18 },
+];
+document.getElementById('review-list').innerHTML = reviews.map(r => `
+  <div class="review-card">
+    <div class="review-header">
+      <div class="reviewer-info">
+        <div class="rev-avatar">${r.name.split(' ').map(w=>w[0]).join('')}</div>
+        <div>
+          <div class="rev-name">${r.name}</div>
+          <div class="rev-stars">${renderStars(r.stars)}</div>
+          <div class="rev-date">${r.loc} · ${r.date}</div>
+        </div>
+      </div>
+    </div>
+    <p class="review-text">${r.text}</p>
+    <div class="review-helpful">Helpful? <button>👍 Yes (${r.helpful})</button> <button>👎 No</button></div>
+  </div>
+`).join('');
+
+// Related products
+const related = PRODUCTS_DB.filter(p => p.id !== product.id).slice(0,4);
+function productCardHTML(p) {
+  return `
+  <div class="product-card" onclick="window.location='product-detail.html?id=${p.id}'">
+    <div class="product-card-img">
+      <img src="${p.img}" alt="${p.name}" loading="lazy">
+      ${p.badge ? `<span class="product-card-badge">${p.badge}</span>` : ''}
+      <div class="product-card-actions">
+        <button onclick="event.stopPropagation();addToCart({id:${p.id},name:'${p.name}',price:${p.price}})" title="Add to cart">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+        </button>
+        <button title="Wishlist">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="product-card-body">
+      <div class="category">${p.cat}</div>
+      <h3>${p.name}</h3>
+      <div class="stars">${renderStars(p.stars)}</div>
+      <div class="product-card-footer">
+        <div><span class="price">$${p.price}</span>${p.old?`<span class="price-old">$${p.old}</span>`:''}</div>
+        <button class="btn-buy" onclick="event.stopPropagation();addToCart({id:${p.id},name:'${p.name}',price:${p.price}})">Buy Now</button>
+      </div>
+    </div>
+  </div>`;
+}
+document.getElementById('related-grid').innerHTML = related.map(productCardHTML).join('');
+updateCartCount();
+</script>
+</body>
+</html>

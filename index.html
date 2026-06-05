@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Alibaba Store — Premium eCommerce</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    /* ─── Hero Slider ─── */
+    .hero {
+      position: relative;
+      height: 92vh;
+      min-height: 600px;
+      overflow: hidden;
+      margin-top: 105px;
+    }
+    .hero-slide {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity 0.8s ease;
+    }
+    .hero-slide.active { opacity: 1; }
+    .hero-slide img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      filter: brightness(0.45);
+    }
+    .hero-content {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 0 8%;
+      max-width: 760px;
+    }
+    .hero-content .section-tag { animation: fadeUp .6s ease both; }
+    .hero-content h1 {
+      font-size: clamp(2.8rem,5.5vw,5rem);
+      line-height: 1.08;
+      margin-bottom: 1.4rem;
+      animation: fadeUp .7s .1s ease both;
+    }
+    .hero-content h1 span { color: var(--clr-primary); }
+    .hero-content p {
+      font-size: 1.05rem;
+      color: rgba(245,240,232,0.75);
+      max-width: 520px;
+      margin-bottom: 2.2rem;
+      animation: fadeUp .7s .2s ease both;
+    }
+    .hero-btns {
+      display: flex; gap: 1rem;
+      animation: fadeUp .7s .3s ease both;
+    }
+    .hero-dots {
+      position: absolute;
+      bottom: 2rem; left: 50%;
+      transform: translateX(-50%);
+      display: flex; gap: 8px;
+      z-index: 10;
+    }
+    .hero-dots button {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.3);
+      border: none;
+      transition: var(--transition);
+      cursor: pointer;
+    }
+    .hero-dots button.active { background: var(--clr-primary); width: 28px; border-radius: 4px; }
+    .hero-scroll {
+      position: absolute;
+      bottom: 2rem; right: 3rem;
+      display: flex; flex-direction: column;
+      align-items: center; gap: 8px;
+      color: var(--clr-muted);
+      font-size: 0.72rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+    }
+    .hero-scroll::after {
+      content: '';
+      width: 1px; height: 50px;
+      background: linear-gradient(var(--clr-primary), transparent);
+    }
+
+    /* ─── Stats bar ─── */
+    .stats-bar {
+      background: var(--clr-dark2);
+      border-top: 1px solid var(--clr-border);
+      border-bottom: 1px solid var(--clr-border);
+      padding: 1.6rem 0;
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      text-align: center;
+    }
+    .stat-item { border-right: 1px solid var(--clr-border); }
+    .stat-item:last-child { border-right: none; }
+    .stat-num {
+      font-family: var(--ff-display);
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--clr-primary);
+    }
+    .stat-label {
+      font-size: 0.78rem;
+      color: var(--clr-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-top: 2px;
+    }
+
+    /* ─── Categories ─── */
+    .section { padding: 5rem 0; }
+    .section-header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      margin-bottom: 2.5rem;
+    }
+    .section-header-left .section-tag { margin-bottom: 0.5rem; }
+    .categories-grid {
+      display: grid;
+      grid-template-columns: 1.6fr 1fr 1fr;
+      grid-template-rows: 260px 260px;
+      gap: 1.2rem;
+    }
+    .cat-card {
+      position: relative;
+      overflow: hidden;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: var(--transition);
+    }
+    .cat-card:hover { border-color: var(--clr-primary); }
+    .cat-card.tall { grid-row: span 2; }
+    .cat-card img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      transition: transform 0.6s ease;
+      filter: brightness(0.55);
+    }
+    .cat-card:hover img { transform: scale(1.06); filter: brightness(0.45); }
+    .cat-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 60%);
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 1.5rem;
+    }
+    .cat-overlay .cat-tag {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--clr-primary);
+      margin-bottom: 4px;
+    }
+    .cat-overlay h3 {
+      font-size: 1.2rem;
+      color: var(--clr-white);
+      margin-bottom: 4px;
+    }
+    .cat-overlay p {
+      font-size: 0.78rem;
+      color: rgba(255,255,255,0.6);
+    }
+    .cat-explore {
+      position: absolute;
+      bottom: 1.5rem; right: 1.5rem;
+      background: var(--clr-primary);
+      color: var(--clr-dark);
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 7px 16px;
+      border-radius: 20px;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: var(--transition);
+    }
+    .cat-card:hover .cat-explore { opacity: 1; transform: translateY(0); }
+
+    /* ─── Products grid ─── */
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.4rem;
+    }
+
+    /* ─── Promo banner ─── */
+    .promo-banner {
+      position: relative;
+      height: 380px;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      margin: 2rem 0;
+    }
+    .promo-banner img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      filter: brightness(0.4);
+    }
+    .promo-content {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 0 5%;
+    }
+    .promo-content .section-tag { background: rgba(200,169,110,0.15); }
+    .promo-content h2 { max-width: 520px; margin-bottom: 1rem; }
+    .promo-content p { color: rgba(245,240,232,0.7); margin-bottom: 1.8rem; }
+    .promo-content .countdown {
+      display: flex; gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    .count-box { text-align: center; }
+    .count-box .num {
+      font-family: var(--ff-display);
+      font-size: 2.2rem;
+      font-weight: 900;
+      color: var(--clr-primary);
+      display: block;
+      line-height: 1;
+    }
+    .count-box .lbl {
+      font-size: 0.68rem;
+      color: var(--clr-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+    .count-sep {
+      font-family: var(--ff-display);
+      font-size: 2rem;
+      color: var(--clr-primary);
+      align-self: flex-start;
+      margin-top: 0.1rem;
+    }
+
+    /* ─── Testimonials ─── */
+    .testimonials { background: var(--clr-dark2); padding: 5rem 0; }
+    .testimonials-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+      margin-top: 2.5rem;
+    }
+    .testimonial-card {
+      background: var(--clr-dark3);
+      border: 1px solid var(--clr-border);
+      border-radius: var(--radius-md);
+      padding: 2rem;
+      transition: var(--transition);
+    }
+    .testimonial-card:hover { border-color: var(--clr-primary); box-shadow: var(--shadow-glow); }
+    .testimonial-card .quote-icon {
+      font-size: 3rem;
+      font-family: var(--ff-display);
+      color: var(--clr-primary);
+      line-height: 1;
+      margin-bottom: 0.5rem;
+      opacity: 0.4;
+    }
+    .testimonial-card p {
+      font-size: 0.9rem;
+      color: rgba(245,240,232,0.8);
+      line-height: 1.8;
+      margin-bottom: 1.5rem;
+      font-style: italic;
+    }
+    .reviewer {
+      display: flex; align-items: center; gap: 12px;
+    }
+    .reviewer-avatar {
+      width: 42px; height: 42px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--clr-primary), var(--clr-primary-dk));
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700;
+      color: var(--clr-dark);
+      font-size: 0.9rem;
+    }
+    .reviewer-name { font-weight: 600; font-size: 0.88rem; }
+    .reviewer-loc { font-size: 0.75rem; color: var(--clr-muted); }
+  </style>
+</head>
+<body>
+
+<header class="site-header" id="site-header"></header>
+
+<main>
+  <!-- Hero -->
+  <section class="hero" id="hero">
+    <div class="hero-slide active" id="slide-0">
+      <img src="" alt="Hero" id="slide-img-0">
+      <div class="hero-content">
+        <span class="section-tag">New Collection 2026</span>
+        <h1>Discover <span>Premium</span><br>Fashion & Style</h1>
+        <p>Explore our curated collection of world-class fashion, technology, and lifestyle products delivered to your door.</p>
+        <div class="hero-btns">
+          <a href="pages/products.html" class="btn btn-primary">Shop Now →</a>
+          <a href="pages/products.html" class="btn btn-outline">View Collections</a>
+        </div>
+      </div>
+    </div>
+    <div class="hero-slide" id="slide-1">
+      <img src="" alt="Hero 2" id="slide-img-1">
+      <div class="hero-content">
+        <span class="section-tag">Technology</span>
+        <h1>Next-Gen <span>Tech</span><br>For Your Life</h1>
+        <p>From smart devices to cutting-edge electronics — everything you need to stay ahead.</p>
+        <div class="hero-btns">
+          <a href="pages/products.html" class="btn btn-primary">Explore Tech →</a>
+          <a href="pages/products.html" class="btn btn-outline">See Deals</a>
+        </div>
+      </div>
+    </div>
+    <div class="hero-slide" id="slide-2">
+      <img src="" alt="Hero 3" id="slide-img-2">
+      <div class="hero-content">
+        <span class="section-tag">Home & Interior</span>
+        <h1>Transform Your <span>Space</span><br>With Style</h1>
+        <p>Elevate your living with our handpicked interior and home decor collection.</p>
+        <div class="hero-btns">
+          <a href="pages/products.html" class="btn btn-primary">Shop Interiors →</a>
+          <a href="pages/products.html" class="btn btn-outline">Get Inspired</a>
+        </div>
+      </div>
+    </div>
+    <div class="hero-dots" id="hero-dots"></div>
+    <div class="hero-scroll">Scroll</div>
+  </section>
+
+  <!-- Stats -->
+  <div class="stats-bar">
+    <div class="container">
+      <div class="stats-grid">
+        <div class="stat-item"><div class="stat-num">2M+</div><div class="stat-label">Happy Customers</div></div>
+        <div class="stat-item"><div class="stat-num">50K+</div><div class="stat-label">Products Listed</div></div>
+        <div class="stat-item"><div class="stat-num">180+</div><div class="stat-label">Countries Served</div></div>
+        <div class="stat-item"><div class="stat-num">99.2%</div><div class="stat-label">Satisfaction Rate</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Categories -->
+  <section class="section">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-header-left">
+          <span class="section-tag">Browse Categories</span>
+          <h2>Shop by Category</h2>
+        </div>
+        <a href="pages/products.html" class="btn btn-outline">View All Categories</a>
+      </div>
+      <div class="categories-grid" id="categories-grid"></div>
+    </div>
+  </section>
+
+  <!-- Featured Products -->
+  <section class="section" style="background:var(--clr-dark2);padding:5rem 0">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-header-left">
+          <span class="section-tag">Hand-Picked</span>
+          <h2>Featured Products</h2>
+        </div>
+        <a href="pages/products.html" class="btn btn-outline">See All Products</a>
+      </div>
+      <div class="products-grid" id="featured-products"></div>
+    </div>
+  </section>
+
+  <!-- Promo Banner -->
+  <section class="section">
+    <div class="container">
+      <div class="promo-banner">
+        <img id="promo-img" src="" alt="Promo">
+        <div class="promo-content">
+          <span class="section-tag">Limited Time Offer</span>
+          <h2>Season Sale — Up to <span style="color:var(--clr-primary)">70% Off</span></h2>
+          <p>Exclusive deals on fashion, electronics, and home goods. Don't miss out.</p>
+          <div class="countdown">
+            <div class="count-box"><span class="num" id="cd-h">08</span><span class="lbl">Hours</span></div>
+            <div class="count-sep">:</div>
+            <div class="count-box"><span class="num" id="cd-m">24</span><span class="lbl">Mins</span></div>
+            <div class="count-sep">:</div>
+            <div class="count-box"><span class="num" id="cd-s">00</span><span class="lbl">Secs</span></div>
+          </div>
+          <a href="pages/products.html" class="btn btn-primary">Grab the Deal →</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- New Arrivals -->
+  <section class="section">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-header-left">
+          <span class="section-tag">Just In</span>
+          <h2>New Arrivals</h2>
+        </div>
+        <a href="pages/products.html" class="btn btn-outline">View All New</a>
+      </div>
+      <div class="products-grid" id="new-arrivals"></div>
+    </div>
+  </section>
+
+  <!-- Testimonials -->
+  <section class="testimonials">
+    <div class="container">
+      <div style="text-align:center;margin-bottom:.5rem"><span class="section-tag">Reviews</span></div>
+      <h2 style="text-align:center;margin-bottom:0.3rem">What Our Customers Say</h2>
+      <p style="text-align:center;color:var(--clr-muted);font-size:.9rem">Trusted by millions of shoppers worldwide</p>
+      <div class="testimonials-grid">
+        <div class="testimonial-card anim-fadeup">
+          <div class="quote-icon">"</div>
+          <p>Absolutely love the quality of clothes I ordered. Fast shipping, great packaging, and the fit was exactly as described. Will definitely be a repeat customer!</p>
+          <div class="reviewer">
+            <div class="reviewer-avatar">SA</div>
+            <div><div class="reviewer-name">Sarah A.</div><div class="reviewer-loc">New York, USA ⭐⭐⭐⭐⭐</div></div>
+          </div>
+        </div>
+        <div class="testimonial-card anim-fadeup anim-delay-1">
+          <div class="quote-icon">"</div>
+          <p>The tech products here are genuinely cutting-edge. Got a great deal on a smart device that I couldn't find cheaper anywhere else. Highly recommend!</p>
+          <div class="reviewer">
+            <div class="reviewer-avatar">MK</div>
+            <div><div class="reviewer-name">Mohammed K.</div><div class="reviewer-loc">Dubai, UAE ⭐⭐⭐⭐⭐</div></div>
+          </div>
+        </div>
+        <div class="testimonial-card anim-fadeup anim-delay-2">
+          <div class="quote-icon">"</div>
+          <p>Interior pieces transformed my apartment completely. The craftsmanship is outstanding and customer service was responsive and helpful throughout.</p>
+          <div class="reviewer">
+            <div class="reviewer-avatar">LC</div>
+            <div><div class="reviewer-name">Laura C.</div><div class="reviewer-loc">London, UK ⭐⭐⭐⭐⭐</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer" id="site-footer"></footer>
+
+<script src="js/components.js"></script>
+<script>
+renderHeader('home');
+renderFooter();
+
+// Slide images once ASSETS available
+document.getElementById('slide-img-0').src = ASSETS.bg1;
+document.getElementById('slide-img-1').src = ASSETS.bg7;
+document.getElementById('slide-img-2').src = ASSETS.int7a;
+document.getElementById('promo-img').src = ASSETS.bg3;
+
+// Hero slider
+const slides = document.querySelectorAll('.hero-slide');
+const dotsEl = document.getElementById('hero-dots');
+let current = 0;
+slides.forEach((_,i) => {
+  const b = document.createElement('button');
+  if(i===0) b.classList.add('active');
+  b.onclick = () => goSlide(i);
+  dotsEl.appendChild(b);
+});
+function goSlide(n) {
+  slides[current].classList.remove('active');
+  dotsEl.children[current].classList.remove('active');
+  current = n;
+  slides[current].classList.add('active');
+  dotsEl.children[current].classList.add('active');
+}
+setInterval(() => goSlide((current+1) % slides.length), 5000);
+
+// Categories
+const cats = [
+  { tag:'Fashion', title:'Clothing & Apparel', count:'2,400+ items', img: ASSETS.cloth1, tall: true },
+  { tag:'Technology', title:'Electronics & Gadgets', count:'1,200+ items', img: ASSETS.tech5, tall: false },
+  { tag:'Interior', title:'Home & Living', count:'800+ items', img: ASSETS.int6, tall: false },
+  { tag:'Lifestyle', title:'Alibaba Marketplace', count:'500+ items', img: ASSETS.alibaba, tall: false },
+  { tag:'Accessories', title:'Bags & Accessories', count:'650+ items', img: ASSETS.bg5, tall: false },
+];
+document.getElementById('categories-grid').innerHTML = cats.map((c,i) => `
+  <a href="pages/products.html" class="cat-card${c.tall?' tall':''}">
+    <img src="${c.img}" alt="${c.title}">
+    <div class="cat-overlay">
+      <div class="cat-tag">${c.tag}</div>
+      <h3>${c.title}</h3>
+      <p>${c.count}</p>
+    </div>
+    <span class="cat-explore">Explore →</span>
+  </a>
+`).join('');
+
+// Product data
+const PRODUCTS = [
+  { id:1, name:'Silk Blend Dress', cat:'Fashion', price:89, old:129, img:ASSETS.cloth1, stars:5, badge:'New' },
+  { id:2, name:'Smart Display Panel', cat:'Technology', price:249, old:349, img:ASSETS.tech5, stars:4, badge:'Hot' },
+  { id:3, name:'Luxury Interior Set', cat:'Interior', price:399, old:599, img:ASSETS.int6, stars:5, badge:'Sale' },
+  { id:4, name:'Premium Tech Device', cat:'Technology', price:189, old:0, img:ASSETS.tech2, stars:4, badge:'' },
+  { id:5, name:'Designer Collection', cat:'Fashion', price:119, old:159, img:ASSETS.cloth3, stars:5, badge:'New' },
+  { id:6, name:'Modern Wall Art', cat:'Interior', price:75, old:0, img:ASSETS.int2, stars:4, badge:'' },
+  { id:7, name:'Casual Summer Top', cat:'Fashion', price:45, old:65, img:ASSETS.cloth5, stars:4, badge:'Sale' },
+  { id:8, name:'Smart Tech Gadget', cat:'Technology', price:299, old:399, img:ASSETS.tech1, stars:5, badge:'Hot' },
+];
+
+function productCardHTML(p) {
+  return `
+  <div class="product-card" onclick="window.location='pages/product-detail.html?id=${p.id}'">
+    <div class="product-card-img">
+      <img src="${p.img}" alt="${p.name}" loading="lazy">
+      ${p.badge ? `<span class="product-card-badge">${p.badge}</span>` : ''}
+      <div class="product-card-actions">
+        <button onclick="event.stopPropagation();addToCart({id:${p.id},name:'${p.name}',price:${p.price}})" title="Add to cart">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+        </button>
+        <button title="Wishlist">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="product-card-body">
+      <div class="category">${p.cat}</div>
+      <h3>${p.name}</h3>
+      <div class="stars">${renderStars(p.stars)}</div>
+      <div class="product-card-footer">
+        <div><span class="price">$${p.price}</span>${p.old?`<span class="price-old">$${p.old}</span>`:''}</div>
+        <button class="btn-buy" onclick="event.stopPropagation();addToCart({id:${p.id},name:'${p.name}',price:${p.price}})">Buy Now</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+document.getElementById('featured-products').innerHTML = PRODUCTS.slice(0,4).map(productCardHTML).join('');
+document.getElementById('new-arrivals').innerHTML = PRODUCTS.slice(4).map(productCardHTML).join('');
+updateCartCount();
+
+// Countdown timer
+let endTime = Date.now() + (8*3600 + 24*60) * 1000;
+function tick() {
+  const diff = Math.max(0, endTime - Date.now());
+  const h = Math.floor(diff/3600000).toString().padStart(2,'0');
+  const m = Math.floor((diff%3600000)/60000).toString().padStart(2,'0');
+  const s = Math.floor((diff%60000)/1000).toString().padStart(2,'0');
+  document.getElementById('cd-h').textContent = h;
+  document.getElementById('cd-m').textContent = m;
+  document.getElementById('cd-s').textContent = s;
+}
+tick(); setInterval(tick, 1000);
+</script>
+</body>
+</html>
