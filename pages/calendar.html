@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meeting Calendar — Alibaba Store</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    body { padding-top: 105px; }
+    .page-banner { background: linear-gradient(135deg, var(--clr-dark2), #1a1200); border-bottom: 1px solid var(--clr-border); padding: 2.5rem 0; }
+    .page-banner p { color: var(--clr-muted); font-size: 0.9rem; margin-top: 0.4rem; }
+    .cal-layout { display: grid; grid-template-columns: 1fr 360px; gap: 2rem; padding: 2.5rem 0 5rem; align-items: start; }
+    .cal-card { background: var(--clr-dark2); border: 1px solid var(--clr-border); border-radius: var(--radius-md); padding: 1.8rem; }
+    .cal-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
+    .cal-nav h3 { font-size: 1.05rem; }
+    .cal-nav-btn { width: 34px; height: 34px; background: var(--clr-dark3); border: 1px solid var(--clr-border); border-radius: var(--radius-sm); color: var(--clr-muted); font-size: 1rem; display: flex; align-items: center; justify-content: center; transition: var(--transition); }
+    .cal-nav-btn:hover { border-color: var(--clr-primary); color: var(--clr-primary); }
+    .cal-weekdays { display: grid; grid-template-columns: repeat(7,1fr); gap: 4px; margin-bottom: 6px; }
+    .cal-weekday { text-align: center; font-size: 0.7rem; font-weight: 600; color: var(--clr-muted); text-transform: uppercase; letter-spacing: 0.08em; padding: 6px 0; }
+    .cal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 4px; }
+    .cal-day { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); font-size: 0.85rem; cursor: pointer; transition: var(--transition); position: relative; border: 1px solid transparent; }
+    .cal-day:hover { background: rgba(200,169,110,0.1); color: var(--clr-primary); }
+    .cal-day.today { background: rgba(200,169,110,0.15); color: var(--clr-primary); font-weight: 700; border-color: rgba(200,169,110,0.3); }
+    .cal-day.selected { background: var(--clr-primary); color: var(--clr-dark); font-weight: 700; }
+    .cal-day.has-event::after { content: ''; position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%); width: 4px; height: 4px; border-radius: 50%; background: var(--clr-primary); }
+    .cal-day.selected.has-event::after { background: var(--clr-dark); }
+    .cal-day.other-month { color: var(--clr-mid); cursor: default; }
+    .cal-day.other-month:hover { background: none; color: var(--clr-mid); }
+    .slots-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 1rem; }
+    .slot-btn { padding: 6px 14px; background: var(--clr-dark3); border: 1px solid var(--clr-border); border-radius: 20px; font-size: 0.78rem; color: var(--clr-muted); transition: var(--transition); }
+    .slot-btn:hover, .slot-btn.active { background: rgba(200,169,110,0.12); border-color: var(--clr-primary); color: var(--clr-primary); }
+    .side-panel { display: flex; flex-direction: column; gap: 1.2rem; }
+    .panel-card { background: var(--clr-dark2); border: 1px solid var(--clr-border); border-radius: var(--radius-md); padding: 1.4rem; }
+    .panel-card h4 { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--clr-muted); margin-bottom: 1rem; padding-bottom: 0.6rem; border-bottom: 1px solid var(--clr-border); }
+    .meeting-item { display: flex; gap: 12px; align-items: flex-start; padding: 10px 0; border-bottom: 1px solid rgba(200,169,110,0.08); }
+    .meeting-item:last-child { border-bottom: none; }
+    .mdate-box { width: 38px; height: 38px; border-radius: 8px; background: rgba(200,169,110,0.1); border: 1px solid var(--clr-border); display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0; }
+    .mdate-box .mday { font-size: 0.95rem; font-weight: 700; color: var(--clr-primary); line-height: 1; }
+    .mdate-box .mmon { font-size: 0.55rem; text-transform: uppercase; color: var(--clr-muted); }
+    .minfo { flex: 1; min-width: 0; }
+    .mtitle { font-size: 0.85rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .mmeta { font-size: 0.72rem; color: var(--clr-muted); margin-top: 2px; }
+    .spill { display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-top: 4px; }
+    .spill-confirmed { background: rgba(76,175,80,0.12); color: #4CAF50; border: 1px solid rgba(76,175,80,0.25); }
+    .spill-pending   { background: rgba(255,193,7,0.12); color: #FFC107; border: 1px solid rgba(255,193,7,0.25); }
+    .spill-declined  { background: rgba(229,57,53,0.12); color: #E53935; border: 1px solid rgba(229,57,53,0.25); }
+    .form-group { margin-bottom: 1rem; }
+    .form-label { display: block; font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--clr-muted); margin-bottom: 5px; }
+    .form-input { width: 100%; background: var(--clr-dark3); border: 1px solid var(--clr-border); border-radius: var(--radius-sm); color: var(--clr-light); padding: 9px 12px; font-size: 0.85rem; transition: var(--transition); outline: none; font-family: var(--ff-body); }
+    .form-input:focus { border-color: var(--clr-primary); }
+    .form-input::placeholder { color: var(--clr-muted); }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .act-btns { display: flex; gap: 6px; margin-top: 8px; }
+    .act-btn { padding: 4px 12px; border-radius: 4px; font-size: 0.72rem; font-weight: 600; text-transform: uppercase; transition: var(--transition); }
+    .act-accept { background: rgba(76,175,80,0.15); color: #4CAF50; border: 1px solid rgba(76,175,80,0.3); }
+    .act-accept:hover { background: #4CAF50; color: white; }
+    .act-decline { background: var(--clr-dark3); color: var(--clr-muted); border: 1px solid var(--clr-border); }
+    .act-decline:hover { border-color: #E53935; color: #E53935; }
+    @media(max-width:900px){ .cal-layout{grid-template-columns:1fr;} }
+  </style>
+</head>
+<body>
+<header class="site-header" id="site-header"></header>
+
+<div class="page-banner">
+  <div class="container">
+    <span class="section-tag">Milestone 2</span>
+    <h1>Meeting Calendar</h1>
+    <p>Manage availability, send requests, track confirmed sessions</p>
+  </div>
+</div>
+
+<main>
+  <div class="container">
+    <div class="cal-layout">
+      <!-- Left: calendar + forms -->
+      <div>
+        <div class="cal-card">
+          <div class="cal-nav">
+            <h3 id="cal-label">June 2026</h3>
+            <div style="display:flex;gap:8px">
+              <button class="cal-nav-btn" onclick="changeMonth(-1)">‹</button>
+              <button class="cal-nav-btn" onclick="changeMonth(1)">›</button>
+            </div>
+          </div>
+          <div class="cal-weekdays">
+            <div class="cal-weekday">Su</div><div class="cal-weekday">Mo</div><div class="cal-weekday">Tu</div>
+            <div class="cal-weekday">We</div><div class="cal-weekday">Th</div><div class="cal-weekday">Fr</div><div class="cal-weekday">Sa</div>
+          </div>
+          <div class="cal-grid" id="cal-grid"></div>
+        </div>
+
+        <div class="cal-card" style="margin-top:1.2rem">
+          <h4 style="font-family:var(--ff-display);font-size:1rem;color:var(--clr-light);margin-bottom:0.3rem">My Availability Slots</h4>
+          <p style="font-size:0.8rem;color:var(--clr-muted);margin-bottom:1rem">Click to toggle open time slots for meetings</p>
+          <div class="slots-row">
+            <button class="slot-btn active" onclick="this.classList.toggle('active')">9:00 AM</button>
+            <button class="slot-btn" onclick="this.classList.toggle('active')">10:00 AM</button>
+            <button class="slot-btn active" onclick="this.classList.toggle('active')">11:00 AM</button>
+            <button class="slot-btn" onclick="this.classList.toggle('active')">12:00 PM</button>
+            <button class="slot-btn active" onclick="this.classList.toggle('active')">2:00 PM</button>
+            <button class="slot-btn" onclick="this.classList.toggle('active')">3:00 PM</button>
+            <button class="slot-btn active" onclick="this.classList.toggle('active')">4:00 PM</button>
+            <button class="slot-btn" onclick="this.classList.toggle('active')">5:00 PM</button>
+          </div>
+        </div>
+
+        <div class="cal-card" style="margin-top:1.2rem">
+          <h4 style="font-family:var(--ff-display);font-size:1rem;color:var(--clr-light);margin-bottom:1rem">Schedule New Meeting</h4>
+          <div class="form-group"><label class="form-label">Meeting Title</label><input class="form-input" id="f-title" placeholder="e.g. Investor Pitch — Series A"></div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Date</label><input class="form-input" id="f-date" type="date" value="2026-06-18"></div>
+            <div class="form-group"><label class="form-label">Time</label><input class="form-input" id="f-time" type="time" value="10:00"></div>
+          </div>
+          <div class="form-group"><label class="form-label">With (Person / Company)</label><input class="form-input" id="f-with" placeholder="e.g. Ahmad K. — NexusCorp"></div>
+          <div class="form-group"><label class="form-label">Notes (optional)</label><input class="form-input" id="f-notes" placeholder="Agenda, Zoom link…"></div>
+          <button class="btn btn-primary" onclick="addMeeting()" style="width:100%">Schedule Meeting</button>
+        </div>
+      </div>
+
+      <!-- Right: panels -->
+      <div class="side-panel">
+        <div class="panel-card">
+          <h4 id="day-title">Select a day</h4>
+          <div id="day-meetings"><p style="color:var(--clr-muted);font-size:0.85rem;text-align:center;padding:1rem 0">Click a date on the calendar</p></div>
+        </div>
+        <div class="panel-card">
+          <h4>Upcoming Meetings</h4>
+          <div id="upcoming-list"></div>
+        </div>
+        <div class="panel-card">
+          <h4>✅ Confirmed (Dashboard)</h4>
+          <div id="confirmed-list"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer" id="site-footer"></footer>
+<script src="../js/components.js"></script>
+<script>
+renderHeader('calendar');
+renderFooter();
+updateCartCount();
+
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+let vm = 5, vy = 2026, selDay = null;
+let meetings = [
+  {id:1,d:18,m:5,y:2026,time:'10:00',title:'Investor Pitch – Tech Startup',with:'Zara M.',status:'confirmed',notes:'Bring deck v3'},
+  {id:2,d:20,m:5,y:2026,time:'14:30',title:'Product Review Session',with:'Ahmad K.',status:'pending',notes:''},
+  {id:3,d:25,m:5,y:2026,time:'11:00',title:'Q2 Strategy Meeting',with:'Laura C.',status:'confirmed',notes:'Zoom in email'},
+  {id:4,d:28,m:5,y:2026,time:'16:00',title:'Contract Negotiation',with:'Bilal R.',status:'declined',notes:''},
+  {id:5,d:30,m:5,y:2026,time:'09:30',title:'New Partnership Call',with:'Sara T.',status:'pending',notes:''},
+];
+
+function renderCal() {
+  const today = new Date();
+  const fd = new Date(vy,vm,1).getDay();
+  const dim = new Date(vy,vm+1,0).getDate();
+  document.getElementById('cal-label').textContent = `${MONTHS[vm]} ${vy}`;
+  let h = '';
+  for(let i=0;i<fd;i++) h+=`<div class="cal-day other-month"></div>`;
+  for(let d=1;d<=dim;d++){
+    const isT = today.getDate()===d&&today.getMonth()===vm&&today.getFullYear()===vy;
+    const isS = selDay===d;
+    const hasE = meetings.some(x=>x.d===d&&x.m===vm&&x.y===vy);
+    h+=`<div class="cal-day${isT?' today':''}${isS?' selected':''}${hasE?' has-event':''}" onclick="selDay=(${d}===selDay?null:${d});renderCal();renderPanels()">${d}</div>`;
+  }
+  document.getElementById('cal-grid').innerHTML=h;
+}
+
+function changeMonth(dir){
+  vm+=dir; if(vm>11){vm=0;vy++;} if(vm<0){vm=11;vy--;} selDay=null; renderCal(); renderPanels();
+}
+
+function mHTML(mt, actions){
+  const sc=`spill-${mt.status}`;
+  return `<div class="meeting-item">
+    <div class="mdate-box"><span class="mday">${mt.d}</span><span class="mmon">${MONTHS[mt.m].slice(0,3)}</span></div>
+    <div class="minfo">
+      <div class="mtitle">${mt.title}</div>
+      <div class="mmeta">🕐 ${mt.time} · 👤 ${mt.with}</div>
+      ${mt.notes?`<div class="mmeta">📝 ${mt.notes}</div>`:''}
+      <span class="spill ${sc}">${mt.status}</span>
+      ${actions&&mt.status==='pending'?`<div class="act-btns"><button class="act-btn act-accept" onclick="setStatus(${mt.id},'confirmed')">✓ Accept</button><button class="act-btn act-decline" onclick="setStatus(${mt.id},'declined')">✗ Decline</button></div>`:''}
+    </div>
+  </div>`;
+}
+
+function renderPanels(){
+  const dt=document.getElementById('day-title');
+  const dm=document.getElementById('day-meetings');
+  if(!selDay){
+    dt.textContent='Select a day';
+    dm.innerHTML=`<p style="color:var(--clr-muted);font-size:0.85rem;text-align:center;padding:1rem 0">Click a date</p>`;
+  } else {
+    const ms=meetings.filter(x=>x.d===selDay&&x.m===vm&&x.y===vy);
+    dt.textContent=`${MONTHS[vm]} ${selDay}, ${vy}`;
+    dm.innerHTML=ms.length?ms.map(m=>mHTML(m,true)).join(''):`<p style="color:var(--clr-muted);font-size:0.85rem;padding:0.5rem 0">No meetings this day.</p>`;
+  }
+  const up=meetings.filter(x=>x.status!=='declined').sort((a,b)=>a.d-b.d);
+  document.getElementById('upcoming-list').innerHTML=up.length?up.map(m=>mHTML(m,false)).join(''):`<p style="color:var(--clr-muted);font-size:0.82rem">None.</p>`;
+  const cf=meetings.filter(x=>x.status==='confirmed');
+  document.getElementById('confirmed-list').innerHTML=cf.length?cf.map(m=>`<div class="meeting-item"><div class="mdate-box"><span class="mday">${m.d}</span><span class="mmon">${MONTHS[m.m].slice(0,3)}</span></div><div class="minfo"><div class="mtitle">${m.title}</div><div class="mmeta">🕐 ${m.time} · 👤 ${m.with}</div></div></div>`).join(''):`<p style="color:var(--clr-muted);font-size:0.82rem">None confirmed yet.</p>`;
+}
+
+function setStatus(id, status){
+  meetings=meetings.map(m=>m.id===id?{...m,status}:m);
+  renderCal(); renderPanels();
+  showToast(status==='confirmed'?'✓ Meeting confirmed!':'Meeting declined');
+}
+
+function addMeeting(){
+  const title=document.getElementById('f-title').value.trim();
+  const date=document.getElementById('f-date').value;
+  const time=document.getElementById('f-time').value;
+  const w=document.getElementById('f-with').value.trim();
+  const notes=document.getElementById('f-notes').value.trim();
+  if(!title||!date){showToast('Please add a title and date');return;}
+  const dt=new Date(date);
+  meetings.push({id:Date.now(),d:dt.getDate(),m:dt.getMonth(),y:dt.getFullYear(),time,title,with:w||'TBD',status:'pending',notes});
+  vm=dt.getMonth(); vy=dt.getFullYear(); selDay=dt.getDate();
+  document.getElementById('f-title').value='';
+  document.getElementById('f-with').value='';
+  document.getElementById('f-notes').value='';
+  renderCal(); renderPanels();
+  showToast('Meeting scheduled!');
+}
+
+renderCal();
+renderPanels();
+</script>
+</body>
+</html>

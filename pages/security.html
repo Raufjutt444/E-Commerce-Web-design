@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Security — Alibaba Store</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    body { padding-top: 105px; }
+    .page-banner { background: linear-gradient(135deg, var(--clr-dark2), #0a001a); border-bottom: 1px solid var(--clr-border); padding: 2.5rem 0; }
+    .page-banner p { color: var(--clr-muted); font-size: 0.9rem; margin-top: 0.4rem; }
+    .sec-section { padding: 2.5rem 0 5rem; }
+    .sec-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+    .sec-card { background: var(--clr-dark2); border: 1px solid var(--clr-border); border-radius: var(--radius-md); padding: 1.8rem; }
+    .sec-card h3 { font-size: 1rem; margin-bottom: 0.3rem; }
+    .sec-card .sub { font-size: 0.8rem; color: var(--clr-muted); margin-bottom: 1.5rem; }
+    .form-group { margin-bottom: 1rem; }
+    .form-label { display: block; font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--clr-muted); margin-bottom: 5px; }
+    .form-input { width: 100%; background: var(--clr-dark3); border: 1px solid var(--clr-border); border-radius: var(--radius-sm); color: var(--clr-light); padding: 10px 13px; font-size: 0.88rem; transition: var(--transition); outline: none; font-family: var(--ff-body); }
+    .form-input:focus { border-color: var(--clr-primary); box-shadow: 0 0 0 2px rgba(200,169,110,0.1); }
+    .form-input::placeholder { color: var(--clr-muted); }
+    .pw-wrap { position: relative; }
+    .pw-toggle { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--clr-muted); padding: 4px; transition: var(--transition); }
+    .pw-toggle:hover { color: var(--clr-primary); }
+    .strength-bar { height: 4px; background: var(--clr-dark3); border-radius: 2px; margin-top: 6px; overflow: hidden; }
+    .strength-fill { height: 100%; border-radius: 2px; transition: width 0.4s ease, background 0.4s ease; }
+    .strength-label { font-size: 0.72rem; margin-top: 4px; }
+    .req-list { margin-top: 0.8rem; display: flex; flex-direction: column; gap: 4px; }
+    .req-item { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; color: var(--clr-muted); transition: color 0.3s; }
+    .req-item.met { color: #4CAF50; }
+    .req-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+    /* Steps */
+    .steps-row { display: flex; gap: 0; margin-bottom: 1.8rem; }
+    .step { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px; position: relative; }
+    .step::after { content:''; position: absolute; top: 13px; left: 50%; width: 100%; height: 1px; background: var(--clr-border); z-index: 0; }
+    .step:last-child::after { display: none; }
+    .step-circle { width: 28px; height: 28px; border-radius: 50%; background: var(--clr-dark3); border: 1px solid var(--clr-border); display: flex; align-items: center; justify-content: center; font-size: 0.72rem; font-weight: 700; color: var(--clr-muted); z-index: 1; transition: all 0.3s; }
+    .step-circle.active { background: var(--clr-primary); color: var(--clr-dark); border-color: var(--clr-primary); }
+    .step-circle.done { background: #4CAF50; color: white; border-color: #4CAF50; }
+    .step-lbl { font-size: 0.65rem; color: var(--clr-muted); text-transform: uppercase; letter-spacing: 0.06em; }
+    /* OTP */
+    .otp-row { display: flex; gap: 8px; justify-content: center; }
+    .otp-input { width: 48px; height: 54px; text-align: center; font-size: 1.4rem; font-weight: 700; background: var(--clr-dark3); border: 1px solid var(--clr-border); border-radius: var(--radius-sm); color: var(--clr-primary); outline: none; transition: var(--transition); font-family: var(--ff-body); }
+    .otp-input:focus { border-color: var(--clr-primary); box-shadow: 0 0 0 2px rgba(200,169,110,0.15); }
+    /* Role */
+    .role-tabs { display: flex; gap: 10px; margin-bottom: 1.2rem; }
+    .role-tab { flex: 1; padding: 10px; border: 1px solid var(--clr-border); border-radius: var(--radius-sm); font-size: 0.82rem; font-weight: 600; text-align: center; cursor: pointer; transition: var(--transition); color: var(--clr-muted); background: var(--clr-dark3); }
+    .role-tab.active-investor { background: rgba(200,169,110,0.12); border-color: var(--clr-primary); color: var(--clr-primary); }
+    .role-tab.active-entrepreneur { background: rgba(33,150,243,0.12); border-color: #2196F3; color: #2196F3; }
+    .role-profile { background: var(--clr-dark3); border: 1px solid var(--clr-border); border-radius: var(--radius-sm); padding: 1.2rem; }
+    .role-avatar { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.9rem; flex-shrink: 0; }
+    .perm-item { display: flex; align-items: center; gap: 8px; padding: 5px 0; font-size: 0.8rem; }
+    /* Walkthrough */
+    .tour-item { display: flex; gap: 12px; align-items: flex-start; padding: 10px; background: var(--clr-dark3); border: 1px solid var(--clr-border); border-radius: var(--radius-sm); margin-bottom: 8px; transition: var(--transition); }
+    .tour-item:hover { border-color: var(--clr-primary); }
+    .tour-icon { font-size: 1.2rem; flex-shrink: 0; }
+    .tour-title { font-size: 0.85rem; font-weight: 600; color: var(--clr-primary); margin-bottom: 2px; }
+    .tour-desc { font-size: 0.78rem; color: var(--clr-muted); }
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(6px); z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 2rem; }
+    .modal-box { background: var(--clr-dark2); border: 1px solid var(--clr-border); border-radius: var(--radius-lg); padding: 2rem; width: 100%; max-width: 400px; text-align: center; }
+    @media(max-width:900px){ .sec-grid{grid-template-columns:1fr;} }
+  </style>
+</head>
+<body>
+<header class="site-header" id="site-header"></header>
+
+<div class="page-banner">
+  <div class="container">
+    <span class="section-tag">Milestone 6 & 7</span>
+    <h1>Security & Access Control</h1>
+    <p>Multi-step login, 2FA, password strength, and role-based dashboards</p>
+  </div>
+</div>
+
+<main>
+  <div class="container">
+    <div class="sec-section">
+      <div class="sec-grid">
+
+        <!-- Multi-step login -->
+        <div class="sec-card">
+          <h3>Multi-Step Login with 2FA</h3>
+          <p class="sub">Simulate the secure login flow with OTP verification</p>
+          <div class="steps-row">
+            <div class="step"><div class="step-circle" id="sc1">1</div><span class="step-lbl">Credentials</span></div>
+            <div class="step"><div class="step-circle" id="sc2">2</div><span class="step-lbl">2FA</span></div>
+            <div class="step"><div class="step-circle" id="sc3">3</div><span class="step-lbl">Access</span></div>
+          </div>
+          <div id="step-panel"></div>
+        </div>
+
+        <!-- Role-based access -->
+        <div class="sec-card">
+          <h3>Role-Based Access Control</h3>
+          <p class="sub">Switch roles to preview different permission sets</p>
+          <div class="role-tabs">
+            <div class="role-tab active-investor" id="role-investor" onclick="setRole('investor')">💼 Investor</div>
+            <div class="role-tab" id="role-entrepreneur" onclick="setRole('entrepreneur')">🚀 Entrepreneur</div>
+          </div>
+          <div class="role-profile" id="role-profile"></div>
+        </div>
+
+        <!-- Password strength -->
+        <div class="sec-card">
+          <h3>Password Strength Meter</h3>
+          <p class="sub">Real-time feedback on password security</p>
+          <div class="form-group">
+            <label class="form-label">Try creating a password</label>
+            <div class="pw-wrap">
+              <input class="form-input" type="password" id="pw-input" placeholder="Enter a password…" oninput="checkStrength(this.value)">
+              <button class="pw-toggle" onclick="togglePw()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="eye-icon"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+            <div class="strength-bar"><div class="strength-fill" id="s-fill" style="width:0%"></div></div>
+            <div class="strength-label" id="s-label"></div>
+          </div>
+          <div class="req-list">
+            <div class="req-item" id="r1"><div class="req-dot"></div> At least 8 characters</div>
+            <div class="req-item" id="r2"><div class="req-dot"></div> One uppercase letter (A-Z)</div>
+            <div class="req-item" id="r3"><div class="req-dot"></div> One lowercase letter (a-z)</div>
+            <div class="req-item" id="r4"><div class="req-dot"></div> One number (0-9)</div>
+            <div class="req-item" id="r5"><div class="req-dot"></div> One special character (!@#$…)</div>
+          </div>
+        </div>
+
+        <!-- Guided walkthrough -->
+        <div class="sec-card">
+          <h3>Guided Walkthrough</h3>
+          <p class="sub">Tooltips & feature guide for new users (Milestone 7)</p>
+          <div class="tour-item"><span class="tour-icon">🏠</span><div><div class="tour-title">Dashboard</div><div class="tour-desc">Your central hub — see stats, recent activity, and quick links to all features.</div></div></div>
+          <div class="tour-item"><span class="tour-icon">📅</span><div><div class="tour-title">Meeting Calendar</div><div class="tour-desc">Set availability slots, send requests, and confirm meetings with partners.</div></div></div>
+          <div class="tour-item"><span class="tour-icon">📹</span><div><div class="tour-title">Video Calling</div><div class="tour-desc">Connect face-to-face with mic, camera, and screen sharing controls.</div></div></div>
+          <div class="tour-item"><span class="tour-icon">📄</span><div><div class="tour-title">Document Chamber</div><div class="tour-desc">Upload deals, e-sign contracts, and track Draft → In Review → Signed status.</div></div></div>
+          <div class="tour-item"><span class="tour-icon">💰</span><div><div class="tour-title">Payments</div><div class="tour-desc">Deposit, withdraw, transfer funds, and initiate Investor → Entrepreneur deal funding.</div></div></div>
+          <div class="tour-item"><span class="tour-icon">🔒</span><div><div class="tour-title">Security</div><div class="tour-desc">Multi-step login, OTP 2FA, and role-based access keep your account safe.</div></div></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- OTP Modal -->
+<div class="modal-overlay" id="otp-modal" style="display:none">
+  <div class="modal-box">
+    <div style="font-size:2.5rem;margin-bottom:0.5rem">🔐</div>
+    <h3 style="margin-bottom:0.5rem">Two-Factor Authentication</h3>
+    <p style="font-size:0.85rem;color:var(--clr-muted);margin-bottom:1.5rem">Enter the 6-digit code sent to your registered device</p>
+    <div class="otp-row" id="otp-row"></div>
+    <button class="btn btn-primary" onclick="verifyOTP()" style="width:100%;margin-top:1.5rem">Verify Code</button>
+    <p style="font-size:0.78rem;color:var(--clr-muted);margin-top:1rem">Didn't receive? <span style="color:var(--clr-primary);cursor:pointer" onclick="showToast('Code resent!')">Resend</span></p>
+  </div>
+</div>
+
+<footer class="site-footer" id="site-footer"></footer>
+<script src="../js/components.js"></script>
+<script>
+renderHeader('security');
+renderFooter();
+updateCartCount();
+
+// ─── Multi-step login ──────────────────────────────
+let loginStep = 1;
+let currentRole = 'investor';
+
+function renderLoginStep(){
+  const c1=document.getElementById('sc1'), c2=document.getElementById('sc2'), c3=document.getElementById('sc3');
+  c1.className='step-circle'+(loginStep>=1?(loginStep>1?' done':' active'):'');
+  c2.className='step-circle'+(loginStep>=2?(loginStep>2?' done':' active'):'');
+  c3.className='step-circle'+(loginStep>=3?' active':'');
+  c1.textContent=loginStep>1?'✓':'1'; c2.textContent=loginStep>2?'✓':'2'; c3.textContent='3';
+
+  const p=document.getElementById('step-panel');
+  if(loginStep===1){
+    p.innerHTML=`
+      <div class="form-group"><label class="form-label">Email</label><input class="form-input" type="email" value="ahmad@nexus.io"></div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <div class="pw-wrap">
+          <input class="form-input" type="password" id="lp" value="Secure@123" placeholder="Password">
+          <button class="pw-toggle" onclick="document.getElementById('lp').type=document.getElementById('lp').type==='password'?'text':'password'">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="loginStep=2;renderLoginStep();buildOTP()" style="width:100%">Continue →</button>`;
+  } else if(loginStep===2){
+    p.innerHTML=`
+      <div style="text-align:center;padding:1rem 0">
+        <div style="font-size:2.5rem;margin-bottom:0.8rem">📱</div>
+        <p style="font-size:0.85rem;color:var(--clr-muted);margin-bottom:1.2rem">Verification code sent to your registered device</p>
+        <button class="btn btn-primary" onclick="document.getElementById('otp-modal').style.display='flex'" style="width:100%">Enter OTP Code</button>
+      </div>`;
+  } else {
+    const isInv = currentRole==='investor';
+    p.innerHTML=`
+      <div style="text-align:center;padding:0.5rem 0">
+        <div style="font-size:2.5rem;margin-bottom:0.5rem">✅</div>
+        <p style="font-weight:700;color:#4CAF50;margin-bottom:4px">Authentication Successful!</p>
+        <p style="font-size:0.82rem;color:var(--clr-muted);margin-bottom:1rem">Logged in as <strong style="color:var(--clr-primary)">Ahmad K.</strong></p>
+        <span style="display:inline-block;padding:5px 16px;border-radius:20px;font-size:0.75rem;font-weight:700;background:${isInv?'rgba(200,169,110,0.12)':'rgba(33,150,243,0.12)'};color:${isInv?'var(--clr-primary)':'#2196F3'};border:1px solid ${isInv?'var(--clr-border)':'rgba(33,150,243,0.3)'}">
+          ${isInv?'💼 Investor':'🚀 Entrepreneur'}
+        </span>
+        <div><button class="btn btn-dark btn-sm" onclick="loginStep=1;renderLoginStep()" style="margin-top:1rem">↺ Reset Demo</button></div>
+      </div>`;
+  }
+}
+
+// ─── OTP ──────────────────────────────────────────
+function buildOTP(){
+  let h='';
+  for(let i=0;i<6;i++) h+=`<input class="otp-input" id="otp${i}" maxlength="1" oninput="otpNext(${i},this)" onkeydown="otpBack(${i},event)">`;
+  document.getElementById('otp-row').innerHTML=h;
+}
+function otpNext(i,el){ if(el.value&&i<5) document.getElementById('otp'+(i+1)).focus(); }
+function otpBack(i,e){ if(e.key==='Backspace'&&!document.getElementById('otp'+i).value&&i>0) document.getElementById('otp'+(i-1)).focus(); }
+function verifyOTP(){
+  const code=Array.from({length:6},(_,i)=>document.getElementById('otp'+i)?.value||'').join('');
+  if(code.length<6){showToast('Enter all 6 digits');return;}
+  document.getElementById('otp-modal').style.display='none';
+  loginStep=3; renderLoginStep();
+  showToast('✓ 2FA verified — access granted!');
+}
+
+// ─── Role ─────────────────────────────────────────
+function setRole(r){
+  currentRole=r;
+  document.getElementById('role-investor').className='role-tab'+(r==='investor'?' active-investor':'');
+  document.getElementById('role-entrepreneur').className='role-tab'+(r==='entrepreneur'?' active-entrepreneur':'');
+  renderRole();
+}
+function renderRole(){
+  const isInv=currentRole==='investor';
+  const perms = isInv
+    ? [['✅','View and filter all listed deals'],['✅','Fund deals (Investor → Entrepreneur)'],['✅','Sign contracts in Document Chamber'],['✅','Video call entrepreneurs'],['❌','List or sell products'],['❌','Accept equity terms']]
+    : [['✅','List products and services'],['✅','Accept or counter deal offers'],['✅','Sign contracts in Document Chamber'],['✅','Video call investors'],['❌','Fund other deals'],['❌','View investor portfolios']];
+  document.getElementById('role-profile').innerHTML=`
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:1rem">
+      <div class="role-avatar" style="background:linear-gradient(135deg,${isInv?'var(--clr-primary),var(--clr-primary-dk)':'#2196F3,#1565C0'});color:${isInv?'var(--clr-dark)':'white'}">${isInv?'AK':'SR'}</div>
+      <div>
+        <div style="font-weight:600;font-size:0.9rem">${isInv?'Ahmad K.':'Sara R.'}</div>
+        <span style="display:inline-block;padding:2px 10px;border-radius:20px;font-size:0.68rem;font-weight:700;background:${isInv?'rgba(200,169,110,0.12)':'rgba(33,150,243,0.12)'};color:${isInv?'var(--clr-primary)':'#2196F3'};border:1px solid ${isInv?'var(--clr-border)':'rgba(33,150,243,0.3)'};margin-top:4px">${isInv?'Investor':'Entrepreneur'}</span>
+      </div>
+    </div>
+    ${perms.map(([icon,text])=>`<div class="perm-item"><span style="font-size:0.9rem">${icon}</span><span style="font-size:0.8rem;color:${icon==='✅'?'var(--clr-light)':'var(--clr-muted)'}">${text}</span></div>`).join('')}`;
+}
+
+// ─── Password strength ─────────────────────────────
+function checkStrength(pw){
+  const reqs=[/.{8,}/,/[A-Z]/,/[a-z]/,/[0-9]/,/[^A-Za-z0-9]/];
+  const labels=['','Weak','Fair','Good','Strong','Very Strong'];
+  const colors=['','#E53935','#FF9800','#FFC107','#4CAF50','#00BCD4'];
+  const score=reqs.filter(r=>r.test(pw)).length;
+  document.getElementById('s-fill').style.width=(score*20)+'%';
+  document.getElementById('s-fill').style.background=colors[score]||'transparent';
+  document.getElementById('s-label').textContent=pw?labels[score]:'';
+  document.getElementById('s-label').style.color=colors[score];
+  reqs.forEach((r,i)=>{ document.getElementById('r'+(i+1)).classList.toggle('met',r.test(pw)); });
+}
+
+function togglePw(){
+  const inp=document.getElementById('pw-input');
+  inp.type=inp.type==='password'?'text':'password';
+}
+
+// ─── Init ─────────────────────────────────────────
+renderLoginStep();
+buildOTP();
+renderRole();
+</script>
+</body>
+</html>

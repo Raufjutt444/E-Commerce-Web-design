@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document Chamber — Alibaba Store</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    body { padding-top: 105px; }
+    .page-banner { background: linear-gradient(135deg, var(--clr-dark2), #0a0a1a); border-bottom: 1px solid var(--clr-border); padding: 2.5rem 0; }
+    .page-banner p { color: var(--clr-muted); font-size: 0.9rem; margin-top: 0.4rem; }
+    .doc-layout { display: grid; grid-template-columns: 1fr 400px; gap: 2rem; padding: 2.5rem 0 5rem; align-items: start; }
+    .upload-zone { border: 2px dashed var(--clr-border); border-radius: var(--radius-md); padding: 2.5rem; text-align: center; cursor: pointer; transition: var(--transition); background: var(--clr-dark2); margin-bottom: 1.5rem; }
+    .upload-zone:hover, .upload-zone.drag { border-color: var(--clr-primary); background: rgba(200,169,110,0.04); }
+    .upload-zone svg { width: 40px; height: 40px; color: var(--clr-primary); margin: 0 auto 1rem; display: block; opacity: 0.7; }
+    .upload-zone h4 { font-size: 0.95rem; margin-bottom: 4px; }
+    .upload-zone p { font-size: 0.8rem; color: var(--clr-muted); }
+    .doc-table-wrap { background: var(--clr-dark2); border: 1px solid var(--clr-border); border-radius: var(--radius-md); overflow: hidden; }
+    .doc-table { width: 100%; border-collapse: collapse; }
+    .doc-table th { padding: 12px 16px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--clr-muted); border-bottom: 1px solid var(--clr-border); text-align: left; }
+    .doc-table td { padding: 14px 16px; font-size: 0.85rem; border-bottom: 1px solid rgba(200,169,110,0.07); }
+    .doc-table tr:last-child td { border-bottom: none; }
+    .doc-table tr { transition: var(--transition); cursor: pointer; }
+    .doc-table tr:hover td { background: rgba(200,169,110,0.04); }
+    .doc-table tr.selected td { background: rgba(200,169,110,0.07); }
+    .spill { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; }
+    .spill-signed   { background: rgba(76,175,80,0.12); color: #4CAF50; border: 1px solid rgba(76,175,80,0.25); }
+    .spill-review   { background: rgba(255,193,7,0.12); color: #FFC107; border: 1px solid rgba(255,193,7,0.25); }
+    .spill-draft    { background: rgba(200,169,110,0.12); color: var(--clr-primary); border: 1px solid var(--clr-border); }
+    .preview-card { background: var(--clr-dark2); border: 1px solid var(--clr-border); border-radius: var(--radius-md); overflow: hidden; }
+    .preview-header { padding: 1.2rem 1.5rem; border-bottom: 1px solid var(--clr-border); display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+    .preview-body { padding: 1.5rem; }
+    .pdf-viewer { background: var(--clr-dark3); border: 1px solid var(--clr-border); border-radius: var(--radius-sm); height: 200px; display: flex; flex-direction: column; align-items: center; justify-content: center; margin-bottom: 1.5rem; color: var(--clr-muted); }
+    .pdf-viewer svg { width: 48px; height: 48px; margin-bottom: 0.8rem; opacity: 0.4; }
+    .sig-section h4 { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--clr-muted); margin-bottom: 0.8rem; }
+    .sig-pad { background: var(--clr-dark3); border: 2px dashed var(--clr-border); border-radius: var(--radius-sm); height: 100px; display: flex; align-items: center; justify-content: center; cursor: crosshair; position: relative; transition: var(--transition); overflow: hidden; }
+    .sig-pad:hover { border-color: var(--clr-primary); }
+    .sig-signed { background: rgba(76,175,80,0.07); border: 1px solid rgba(76,175,80,0.3); border-radius: var(--radius-sm); padding: 1rem; text-align: center; }
+    .sig-name { font-family: var(--ff-display); font-size: 1.6rem; font-style: italic; color: #4CAF50; }
+    .sig-date { font-size: 0.72rem; color: var(--clr-muted); margin-top: 4px; }
+    .action-row { display: flex; gap: 8px; margin-top: 1.2rem; flex-wrap: wrap; }
+    .empty-preview { padding: 4rem; text-align: center; color: var(--clr-muted); }
+    .empty-preview svg { width: 52px; height: 52px; margin: 0 auto 1rem; display: block; opacity: 0.3; }
+    @media(max-width:900px){ .doc-layout{grid-template-columns:1fr;} }
+  </style>
+</head>
+<body>
+<header class="site-header" id="site-header"></header>
+
+<div class="page-banner">
+  <div class="container">
+    <span class="section-tag">Milestone 4</span>
+    <h1>Document Chamber</h1>
+    <p>Upload, preview, e-sign, and track deals & contracts</p>
+  </div>
+</div>
+
+<main>
+  <div class="container">
+    <div class="doc-layout">
+      <!-- Left: upload + table -->
+      <div>
+        <div class="upload-zone" id="upload-zone"
+          onclick="document.getElementById('file-in').click()"
+          ondragover="event.preventDefault();this.classList.add('drag')"
+          ondragleave="this.classList.remove('drag')"
+          ondrop="event.preventDefault();this.classList.remove('drag');uploadMock()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+          <h4>Drop files here or click to upload</h4>
+          <p>PDF, DOCX, DOC — max 50 MB per file</p>
+          <input type="file" id="file-in" style="display:none" accept=".pdf,.doc,.docx" onchange="uploadMock(this)">
+        </div>
+
+        <div class="doc-table-wrap">
+          <table class="doc-table">
+            <thead><tr><th>Document</th><th>Status</th><th>Date</th><th>Size</th><th></th></tr></thead>
+            <tbody id="doc-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Right: preview -->
+      <div id="preview-area">
+        <div class="preview-card">
+          <div class="empty-preview">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            <p style="font-size:0.88rem">Select a document to preview and sign</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer" id="site-footer"></footer>
+<script src="../js/components.js"></script>
+<script>
+renderHeader('documents');
+renderFooter();
+updateCartCount();
+
+let docs = [
+  {id:1, name:'Series_A_Term_Sheet.pdf', status:'Signed',   date:'2026-06-10', size:'1.2 MB', signed:true },
+  {id:2, name:'NDA_Agreement.pdf',        status:'In Review',date:'2026-06-14', size:'0.4 MB', signed:false},
+  {id:3, name:'Partnership_Contract.pdf', status:'Draft',   date:'2026-06-15', size:'0.8 MB', signed:false},
+];
+let selId = null;
+let signing = false;
+
+const spillCls = { 'Signed':'spill-signed','In Review':'spill-review','Draft':'spill-draft' };
+
+function renderTable(){
+  document.getElementById('doc-tbody').innerHTML = docs.map(d=>`
+    <tr onclick="selectDoc(${d.id})" class="${selId===d.id?'selected':''}">
+      <td style="font-weight:500">📄 ${d.name}</td>
+      <td><span class="spill ${spillCls[d.status]}">${d.status}</span></td>
+      <td style="color:var(--clr-muted)">${d.date}</td>
+      <td style="color:var(--clr-muted)">${d.size}</td>
+      <td><button class="btn-buy" onclick="event.stopPropagation();selectDoc(${d.id})" style="font-size:0.72rem;padding:5px 12px">View</button></td>
+    </tr>`).join('');
+}
+
+function selectDoc(id){
+  selId=id; signing=false; renderTable(); renderPreview();
+}
+
+function renderPreview(){
+  const d=docs.find(x=>x.id===selId);
+  if(!d){ document.getElementById('preview-area').innerHTML=`<div class="preview-card"><div class="empty-preview"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><p style="font-size:0.88rem">Select a document to preview and sign</p></div></div>`; return; }
+
+  const sigHTML = d.signed
+    ? `<div class="sig-signed"><div class="sig-name">Ahmad K.</div><div class="sig-date">✓ Signed on ${d.date}</div></div>`
+    : signing
+      ? `<div class="sig-signed" style="background:rgba(200,169,110,0.05);border-color:var(--clr-border)"><div class="sig-name" style="color:var(--clr-primary)">Ahmad K.</div><div class="sig-date">Click "Confirm Signature" to finalise</div></div>`
+      : `<div class="sig-pad" onclick="signing=true;renderPreview()"><span style="font-size:0.85rem">✍&nbsp; Click here to sign</span></div>`;
+
+  const actions = !d.signed ? `
+    <div class="action-row">
+      ${signing?`<button class="btn btn-primary btn-sm" onclick="confirmSign(${d.id})">✓ Confirm Signature</button>`:''}
+      <button class="btn btn-outline btn-sm" onclick="setStatus(${d.id},'In Review')">→ Send for Review</button>
+      <button class="btn btn-dark btn-sm" onclick="showToast('Download started!')">⬇ Download</button>
+    </div>` : `<div class="action-row"><button class="btn btn-dark btn-sm" onclick="showToast('Download started!')">⬇ Download</button><button class="btn btn-dark btn-sm" onclick="showToast('Shared!')">↗ Share</button></div>`;
+
+  document.getElementById('preview-area').innerHTML=`
+    <div class="preview-card">
+      <div class="preview-header">
+        <div>
+          <div style="font-weight:700;font-size:0.95rem;margin-bottom:6px">${d.name}</div>
+          <span class="spill ${spillCls[d.status]}">${d.status}</span>
+          <span style="font-size:0.75rem;color:var(--clr-muted);margin-left:8px">${d.date} · ${d.size}</span>
+        </div>
+      </div>
+      <div class="preview-body">
+        <div class="pdf-viewer">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          <div style="font-size:0.82rem">PDF preview loaded</div>
+          <div style="font-size:0.72rem;margin-top:2px">${d.size}</div>
+        </div>
+        <div class="sig-section">
+          <h4>E-Signature</h4>
+          ${sigHTML}
+        </div>
+        ${actions}
+      </div>
+    </div>`;
+}
+
+function confirmSign(id){
+  docs=docs.map(d=>d.id===id?{...d,status:'Signed',signed:true,date:new Date().toISOString().split('T')[0]}:d);
+  selId=id; signing=false; renderTable(); renderPreview();
+  showToast('✓ Document signed successfully!');
+}
+
+function setStatus(id, status){
+  docs=docs.map(d=>d.id===id?{...d,status}:d);
+  renderTable(); renderPreview();
+  showToast(`Status updated: ${status}`);
+}
+
+function uploadMock(input){
+  const name = input&&input.files&&input.files[0] ? input.files[0].name : `New_Document_${docs.length+1}.pdf`;
+  const size = input&&input.files&&input.files[0] ? `${(input.files[0].size/1048576).toFixed(1)} MB` : '0.3 MB';
+  docs.unshift({id:Date.now(), name, status:'Draft', date:new Date().toISOString().split('T')[0], size, signed:false});
+  renderTable();
+  showToast(`"${name}" uploaded!`);
+}
+
+renderTable();
+renderPreview();
+</script>
+</body>
+</html>
