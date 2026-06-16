@@ -46,7 +46,7 @@ const ASSETS = {
 // ─── Inject Header ────────────────────────────────────
 function renderHeader(activePage = '') {
   const nav = ['Home','Products','Interior','Technology','About','Contact'];
-  const navLinks = { Home:'../index.html', Products:'products.html', Interior:'products.html', Technology:'products.html', About:'../index.html', Contact:'../index.html' };
+  const navLinks = { Home:'../index.html', Products:'pages/products.html', Interior:'pages/interior.html', Technology:'pages/techhnology.html', About:'pages/about.html', Contact:'../pages/contact.html' };
   const headerPath = activePage === 'home' ? '' : '../';
 
   document.getElementById('site-header').innerHTML = `
